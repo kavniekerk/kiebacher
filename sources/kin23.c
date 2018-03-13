@@ -85,6 +85,76 @@ double  kinematic_23(double Pcm,int i3, double M45, double cs1, double cs2,  dou
   return r; 
 }  
 
+double  kinematic_32(double Pcm,int i3, double M45, double cs1, double cs2,  double fi,REAL*pmass, REAL*pvect) // 32add
+{
+  int i;
+  double pcm1,pcm2,p0,p2,p3,chY,shY,sn1,sn2,r;
+  int err,i4,i5;
+  
+  switch(i3)
+  { 
+    case 3: i4=2;i5=4; break;
+    case 4: i4=2;i5=3; break;
+    default: i3=2;i4=3;i5=4;
+  }
+  
+  sn1=sqrt(1-cs1*cs1);
+  sn2=sqrt(1-cs2*cs2);
+  for(i=0;i<20;i++)pvect[i]=0;
+
+  pvect[0]= sqrt(Pcm*Pcm+pmass[0]*pmass[0]);
+  pvect[3]= Pcm;
+  pvect[4]= sqrt(Pcm*Pcm+pmass[1]*pmass[1]);
+  pvect[7]=-Pcm;
+  
+   if(M45+pmass[i3]>=pvect[0]+pvect[4]) return 0; //diable rewrite other relation for 3->2
+  pcm1=decayPcm(pvect[0]+pvect[4],pmass[i3], M45);
+//printf("pcm1=%E\n",pcm1);  
+  if(!pcm1) return 0;
+  pvect[i3*4]=sqrt(pmass[i3]*pmass[i3]+pcm1*pcm1);
+  pvect[i3*4+3]=pcm1*cs1;
+  pvect[i3*4+2]=pcm1*sn1;
+ 
+  pcm2=decayPcm(M45,pmass[i4],pmass[i5]);
+//printf("pcm2=%E  M45=%E  pmass[%d]=%E pmass[%d]=%E \n",pcm2,M45,i4,pmass[i4],i5,pmass[i5]);
+
+  if(!pcm2) return 0;
+  
+  pvect[i4*4]=sqrt(pcm2*pcm2+pmass[i4]*pmass[i4]);
+  pvect[i4*4+3]=pcm2*cs2;
+  pvect[i4*4+2]=pcm2*sn2*cos(fi);
+  pvect[i4*4+1]=pcm2*sn2*sin(fi);
+
+//printf("fi=%E pcm2=%E sn2=%E\n",fi, pcm2,sn2);
+  
+  pvect[i5*4]=sqrt(pcm2*pcm2+pmass[i5]*pmass[i5]);
+  pvect[i5*4+3]=-pvect[i4*4+3];
+  pvect[i5*4+2]=-pvect[i4*4+2];    
+  pvect[i5*4+1]=-pvect[i4*4+1]; 
+ 
+  shY=pcm1/M45;
+  chY=sqrt(1+shY*shY);
+    
+  p0=pvect[i4*4]; p3=pvect[i4*4+3];
+  pvect[i4*4  ]=p0*chY+p3*shY;
+  pvect[i4*4+3]=p0*shY+p3*chY;
+   
+  p0=pvect[i5*4]; p3=pvect[i5*4+3];
+  pvect[i5*4  ]=p0*chY+p3*shY;
+  pvect[i5*4+3]=p0*shY+p3*chY;
+  
+  p2=pvect[i4*4+2];p3=pvect[i4*4+3];
+  pvect[i4*4+2]=-(p2*cs1+p3*sn1);
+  pvect[i4*4+3]=-(-p2*sn1+p3*cs1);
+
+  p2=pvect[i5*4+2];p3=pvect[i5*4+3];
+  pvect[i5*4+2]= -(p2*cs1+p3*sn1);
+  pvect[i5*4+3]= -(-p2*sn1+p3*cs1);
+
+  return 3.8937966E8*pcm1*pcm2/(512*M_PI*M_PI*M_PI*M_PI*(pvect[0]+pvect[4])*(pvect[0]+pvect[4]));
+  return r; 
+}  
+
 int NCALL;
 
 static double Pcm_, Mmax, Mmin, cs1_, cs2_, fi_,M_;

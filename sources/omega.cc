@@ -1350,6 +1350,33 @@ static void XderivLn(double s3, double *Y, double *dYdx)
   }
 }
 
+static void XderivLn32(double s3, double *Y, double *dYdx) // 32add
+{
+  double y=Y[0];
+  double yeq, sqrt_gStar;
+  double T,heff,geff;
+  
+//  s3=polint1(T,Tdim,t_,s3_);  
+  T=polint1(s3,Tdim,s3_,t_);  
+  heff=hEff(T);
+  geff=gEff(T);
+//  sqrt_gStar=polint1(T,Tdim,t_,sqrt_gstar_);
+  
+  MassCut=2*Mcdm -T*log(Beps_); yeq=Yeq(T);
+//  if(y<yeq) *dYdx=0; else 
+  { double vSig,vSig32=0.3,alpha,epsY;
+  
+    if(deltaY) epsY=deltaY/y; else  epsY=0; 
+    vSig=vSigmaI(T,Beps_,Fast_,&alpha);
+//printf("T=%E alpha=%E\n", Mcdm/x, alpha);     
+    *dYdx=MPlank
+    *pow(2*M_PI*M_PI/45.*heff,0.666666666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)
+//    *sqrt_gStar*sqrt(M_PI/45)
+    *(vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY)+vSig32*(y*y-y*y*y/yeq));
+//printf(" T=%E  y=%E   yeq=%E  epsY=%E  alpha=%E \n",T, y,  yeq, epsY, alpha);   
+  }
+}
+
 
 double darkOmegaFO(double * Xf_, int Fast, double Beps)
 {
@@ -1385,6 +1412,130 @@ double darkOmegaFO(double * Xf_, int Fast, double Beps)
 static double *Ytab=NULL;
 
 double YF(double T){ return polint1Exp(T,Ntab,Ttab, Ytab) ;}
+
+
+double darkOmega32(double * Xf, int Fast, double Beps) // 32add
+{
+  double Yt,Yi,Xt=27;
+  double Z1=1.1,Z2=10,Zf=2.5; 
+  int i;
+  int Nt=25;
+  
+  Ytab=realloc(Ytab,sizeof(double)*Nt);
+  Ttab=realloc(Ttab,sizeof(double)*Nt);
+  Ntab=0;
+
+  if(CDM1==NULL)  fracCDM2=1; else
+  if(CDM2==NULL)  fracCDM2=0; else 
+  if(Mcdm1<Mcdm2) fracCDM2=0; else fracCDM2=1;
+
+  if(assignVal("Q",2*Mcdm)==0) calcMainFunc() ;
+  GGscale=2*Mcdm/3;
+  if(Beps>=1) Beps=0.999;
+  Beps_=Beps; Fast_=Fast;
+  
+  if(Z1<=1) Z1=1.1;
+  
+  Yt=  darkOmega1(&Xt, Z1, (Z1-1)/5,Fast, Beps);
+
+  if(Yt<0||FError) { return -1;}
+  
+  Tstart=Mcdm/Xt;
+  
+  if(Yt<fabs(deltaY)*1.E-15)
+  {  
+     if(deltaY>0) dmAsymm=1;  else dmAsymm=-1;
+     if(Xf) *Xf=Xt;   
+     return 2.742E8*Mcdm*deltaY;  
+  }   
+  
+  Ntab=1;
+  Ttab[0]=Tstart;
+  Ytab[0]=Yt;
+  Tend=Tstart;
+  
+  for(i=0; ;i++)
+  { double X2=vSigmaGrid.xtop*pow(XSTEP,i+1);
+    double yeq,alpha;
+    double s3_t,s3_2;
+
+    if(Xt>X2*0.999999) continue; 
+
+    yeq=Yeq(Mcdm/Xt);
+    alpha=vSigmaGrid.alpha[i];    
+
+
+    if(Yt*Yt>=Z2*Z2*( alpha*Yt*yeq+(1-alpha)*yeq*yeq) || Yt<fabs(deltaY*1E-15))  break;
+    
+
+    s3_t=polint1(Mcdm/Xt,Tdim,t_,s3_);
+    s3_2=polint1(Mcdm/X2,Tdim,t_,s3_); 
+ //   if(odeint(&Yt,1 ,Mcdm/Xt , Mcdm/X2 , 1.E-3, (Mcdm/Xt-Mcdm/X2 )/2, &XderivLn)){ printf("problem in solving diff.equation\n"); return -1;}   
+    if(odeint(&Yt,1 ,s3_t , s3_2 , 1.E-4, (s3_2-s3_t)/2, &XderivLn32)){ printf("problem in solving diff.equation\n"); return -1;}
+    if(Ntab>=Nt)
+    { Nt+=20;
+      Ytab=realloc(Ytab,sizeof(double)*Nt);
+      Ttab=realloc(Ttab,sizeof(double)*Nt);
+    }      
+    
+    Tend=Mcdm/X2;                                 
+    Xt=X2;   
+    Ytab[Ntab]=Yt;
+    Ttab[Ntab]=Tend;
+    Ntab++;
+  }
+//for(int i=0; i<Ntab;i++) printf("T=%e Y=%e  Yeq=%E\n", Ttab[i],Ytab[i],Yeq(Ttab[i]));
+  
+  if(Xf) 
+  {  double T1,T2,Y1,Y2,dY2,dY1;
+     T1=Ttab[0];
+     Y1=Ytab[0];
+     dY1=Zf*Yeq(T1)-Y1;
+     *Xf=Mcdm/T1;
+     for(i=1;i<Ntab;i++)            
+     { T2=Ttab[i];
+       Y2=Ytab[i]; 
+       dY2=Zf*Yeq(T2)-Y2;
+       if(dY2<0)
+       { 
+         for(;;)
+         {  double al,Tx,Yx,dYx,Xx;
+            al=dY2/(dY2-dY1);
+            Tx=al*T1+(1-al)*T2, /*Yx=al*Y1+(1-al)*Y2,*/ Yx=polint3(Tx,Ntab,Ttab,Ytab),    dYx=Zf*Yeq(Tx)-Yx;
+            if(fabs(dYx)<0.01*Yx) 
+            { *Xf=Mcdm/Tx;
+              break;
+            } else  { if(dYx>0) {T1=Tx,Y1=Yx;}  else {T2=Tx,Y2=Yx;} }
+         }
+         break; 
+      }  
+      else {dY1=dY2; T1=T2; Y1=Y2; *Xf=Mcdm/T2;}        
+    }
+  }
+     
+  if(Yt<fabs(deltaY*1E-15))  
+  {  
+      if(deltaY>0) dmAsymm=1; else dmAsymm=-1;   
+      return 2.742E8*Mcdm*deltaY;
+  }  
+    
+  Yi=1/( (Mcdm/Xt)*sqrt(M_PI/45)*MPlank*aRate(Xt,1,Fast,NULL,NULL,NULL));
+  
+  if(!isfinite(Yi)||FError)  return -1;
+  if(deltaY==0)
+  { dmAsymm=0;
+    return  2.742E8*Mcdm/(1/Yt  +  1/Yi); /* 2.828-old 2.755-new,2.742 -newnew */
+  } else
+  {  double a,f,z0,Y0;
+     a=fabs(deltaY);
+     if(Yt<a*1.E-5)  f=Yt*Yt/4/a; else f=(sqrt(Yt*Yt+a*a)-a)/(sqrt(Yt*Yt+a*a)+a);   
+     f*= exp(-2*a/Yi);
+     z0=sqrt(f)*2*a/(1-f);
+     Y0=sqrt(z0*z0+a*a);
+     dmAsymm=deltaY/Y0;
+     return 2.742E8*Mcdm*Y0;
+  }   
+}
 
 
 double darkOmega(double * Xf, int Fast, double Beps)

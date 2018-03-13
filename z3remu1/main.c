@@ -79,13 +79,12 @@ int main(int argc,char** argv)
 	for (x =3 ; x< 110; x+=dx)
 		{
 		if (x>19 && x<30 && rep==0) x-=0.8*dx;
-		if (x>200 )dx=2;
-		s=1;//s_dens(Mcdm/x);
-		vs22=vSigmaCC(Mcdm/x,cc22,0);
-		vs= vSigmaCC(Mcdm/x,cc,0);
+		s=s_dens(Mcdm/x);
+		vs22=vSigmaCC32(Mcdm/x,cc22,0);
+		vs= vSigmaCC32(Mcdm/x,cc,0);
 		if (vs==0 && rep<6) 
 			{
-			vs= vSigmaCC(Mcdm/x,cc,0);
+			vs= vSigmaCC32(Mcdm/x,cc,0);
 			rep++;
 			//printf("repeating calculation\n\n");
 			continue;
@@ -103,11 +102,11 @@ int main(int argc,char** argv)
 		Rout=vs;//*pow(s*Yeq(Mcdm/x),2)/(s*YF(Mcdm/x));
 		Rin22=vs22;//*s*YF(Mcdm/x);
 		Rout22=vs22;//*pow(s*Yeq(Mcdm/x),2)/(s*YF(Mcdm/x));
-		hubb=1;//H_rate(Mcdm/x);
+		hubb=H_rate(Mcdm/x);
 		d=fabs( Rin-Rout);
 		d22=fabs( Rin22-Rout);
 		fprintf(fp,    "%f\t%e\t%e\t%e\t%e\t%e\n", x,s*YF(Mcdm/x), vs22, Rin,Rout22,3.*hubb);
-		fprintf(stdout,"%f\t%e\t%e\t%e\t%e\t%e\n", x,s*YF(Mcdm/x), vs22, Rin,Rout22,3.*hubb);
+		fprintf(stdout,"%.2f\t%.2e\t%.2e\t%.2e\t%.2e\t%.2e\n", x,s*YF(Mcdm/x), vs22, Rin,Rout22,3.*hubb);
 		//fprintf(stdout,"%f\t%e\t%e\n", x, dcs,chi2);
 		}
 		

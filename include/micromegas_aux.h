@@ -106,6 +106,7 @@ extern double (*sqme22)(int nsub, double GG, REAL *pvect, REAL*cb_coeff, int * e
 
 extern int     kin22(double PcmIn,REAL * pmass);
 extern double  kinematic_23(double Pcm,int i3, double M45, double cs1, double cs2,  double fi,REAL*pmass, REAL*pvect);
+extern double  kinematic_32(double Pcm,int i3, double M45, double cs1, double cs2,  double fi,REAL*pmass, REAL*pvect);//32add
 extern double  kinematic_24(double Pcm,int i3, int i4, double M1, double M2, double xcos,double xcos1, double xcos2, double fi1, double fi2,
                             REAL*pmass, REAL * P);
                             

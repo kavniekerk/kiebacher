@@ -1,6 +1,6 @@
-echo "# micrOMEGAS32" >> README.md
+#commit FILES to git
 git init
-git add README.md
+git add FILES
 git commit -m "first commit"
 git remote add origin https://github.com/stefankiebacher/micrOMEGAS32.git
 git push -u origin master
