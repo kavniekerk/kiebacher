@@ -1,0 +1,14 @@
+m -> nm,b,T
+m -> nm,s,T
+m -> nm,d,T
+m -> nm,C,b
+m -> nm,U,b
+m -> nm,s,C
+m -> nm,d,C
+m -> nm,U,s
+m -> nm,d,U
+m -> nm,l,Nl
+m -> e,Ne,nm
+m -> W-,h,nm
+m -> Z,W-,nm
+m -> A,W-,nm

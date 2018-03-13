@@ -52,8 +52,8 @@ int main(int argc,char** argv)
 #endif
 
 #ifdef OMEGA
-{ int fast=1;
-  double Beps=1.E-4, cut=1.e-60;
+{ int fast=-1;
+  double Beps=1.E-5, cut=1.e-160;
   double Omega;  
   int i,err; 
   printf("\n==== Calculation of relic density =====\n");   
@@ -72,7 +72,7 @@ int main(int argc,char** argv)
   }
 	double x, dx=0.8,vs;
 	FILE * fp=fopen("data", "w+");
-	numout * cc=newProcess("~x,~x->~x,~X,~X"),*cc22=newProcess("~x,~X->d,D");//("~x1,~x1->~x1,~X1,~X1");//,~X1"~x1,~X1->W+,W-"
+	numout * cc=newProcess("~x,~x->~x,~X,~X"),*cc22=newProcess("~x,~X->W+,W-");//("~x1,~x1->~x1,~X1,~X1");//,~X1"~x1,~X1->W+,W-"
 	double hubb,Rin,Rout,Rin22,Rout22,s,d,d22,vs22,noint, M_Pl=1.22066e19;
 	int rep22=0,rep=0;
 	double xstart=Mcdm/Tstart,xend=Mcdm/Tend;
@@ -81,10 +81,10 @@ int main(int argc,char** argv)
 		if (x>19 && x<30 && rep==0) x-=0.8*dx;
 		s=s_dens(Mcdm/x);
 		vs22=vSigmaCC32(Mcdm/x,cc22,0);
-		vs= vSigmaCC32(Mcdm/x,cc,0);
-		if (vs==0 && rep<6) 
+		vs=1 ;// vSigmaCC32(Mcdm/x,cc,0);
+		if (vs==0 && rep<12) 
 			{
-			vs= vSigmaCC32(Mcdm/x,cc,0);
+			//vs= vSigmaCC32(Mcdm/x,cc,0);
 			rep++;
 			//printf("repeating calculation\n\n");
 			continue;
@@ -104,9 +104,9 @@ int main(int argc,char** argv)
 		Rout22=vs22;//*pow(s*Yeq(Mcdm/x),2)/(s*YF(Mcdm/x));
 		hubb=H_rate(Mcdm/x);
 		d=fabs( Rin-Rout);
-		d22=fabs( Rin22-Rout);
-		fprintf(fp,    "%f\t%e\t%e\t%e\t%e\t%e\n", x,s*YF(Mcdm/x), vs22, Rin,Rout22,3.*hubb);
-		fprintf(stdout,"%.2f\t%.2e\t%.2e\t%.2e\t%.2e\t%.2e\n", x,s*YF(Mcdm/x), vs22, Rin,Rout22,3.*hubb);
+		d22=fabs(hubb-fabs(Rin22*(s*YF(Mcdm/x)-pow(s*Yeq(Mcdm/x),2)/(s*YF(Mcdm/x)))));
+		fprintf(fp,    "%f\t%e\t%e\t%e\t%e\t%e\n", x,YF(Mcdm/x), d22, Rin,Rout22,3.*hubb);
+		fprintf(stdout,"%.2f\t%.2e\t%.2e\t%.2e\t%.2e\t%.2e\n", x,YF(Mcdm/x), d22, Rin,Rout22,3.*hubb);
 		//fprintf(stdout,"%f\t%e\t%e\n", x, dcs,chi2);
 		}
 		

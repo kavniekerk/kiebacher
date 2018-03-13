@@ -1,0 +1,35 @@
+brokenU(1)
+ Parameters 
+ Name          | Value       |  Comment                                                  |
+ EE            |0.31343      |elecromagnetic constant
+ alfSMZ        |0.1184       |Srtong alpha(MZ) for running mass calculation
+ Q             |100          |scale for running mass calculation
+ s12           |0.221        |Parameter of C-K-M matrix  (PDG96)
+ s23           |0.041        |Parameter of C-K-M matrix  (PDG96)
+ s13           |0.0035       |Parameter of C-K-M matrix  (PDG96)
+ Mm            |0.1057       |muon mass
+ Ml            |1.777        |tau-lepton mass
+ McMc          |1.2          |Mc(Mc)
+ MbMb          |4.25         |Mb(Mb)
+ Mtp           |173.07       |t-quark pole mass
+ MZ            |91.189       |Z-boson mass
+ MW            |80.385       |W-boson mass
+ Mh            |125          |higgs mass
+ MZ2           |91.189        |modified Z Boson mass                                      |
+VEW            |263.         |vev higgs
+MDZ            |0.782         |Dark Z' mass
+Mcdm           |0.462         |Dark matter mass
+MDH            |18.42         |Dark Higgs mass
+KAP            |1.2          |kappa for x^3phi^dag
+sinDH          |0.1          |sin(mixing angel between SM and Dark higgs
+sinDG          |0.01          |sin(mixing angel between SM and Dark Gauge bosons
+VDH            |63.0         |vev of Dark higgs
+lamPC          |0.1          |lambda_phi chi
+lamCH          |0.1         |lambda_chi H
+lamPH          |0.1         |lambda_phi H
+lamchi         |0.3         |lambda_chi
+lamphi         |0.3         |lambda_phi
+lamH           |0.3         |lambda_H
+gXhat					 |3.3				 | \hat{g}_X =g_X/cos(epsilon) Dark coupling constant
+qd 						 |3.0						| Dark charge of Dark higgs
+==========================================================================================

@@ -64,6 +64,18 @@ static double u_integrand_( double u)
    return s_integrandT_(sqrtS )*6*T_*u/z;
 }
 
+static double u_integrand_thresallow( double u)
+{  double z,y,sv_tot,w;
+   double Xf_1;
+   double ms,md,sqrtS,PcmIn,res0;
+   
+   if(u==0. || u==1.) return 0.;
+   z=1-u*u;
+   sqrtS=M1+M2-3*T_*log(z);
+   if(sqrtS<=M1+M2 && sqrtS<=pmass[2]+pmass[3]) return 0;
+   return s_integrandT_(sqrtS )*6*T_*u/z;
+}
+
 static double vsigma23integrandT(double *x, double w)
 {
    double pcmIn,sqrtS,M45;
@@ -82,7 +94,7 @@ static double vsigma23integrandT(double *x, double w)
    M45=M45_min+x[1]*(M45_max-M45_min);
    
    x1=M1/T_; x2=M2/T_; y=sqrtS/T_;
-   if(y-x1-x2>50) return 0;
+   //if(y-x1-x2>50) return 0;//32add
 
    r=kinematic_23(pcmIn,i3, M45, 2*x[2]-1 ,2*x[3]-1,M_PI*x[4],pmass,pvect)*8*M_PI*(M45_max-M45_min); //  /pcmIn
    if(r==0) return 0;
@@ -273,7 +285,7 @@ double vSigmaCC32 (double T,numout* cc, int mode)//32add
           sqme22=CI->sqme;
           nsub22=1;
           if((M1+M2-(pmass[2]+pmass[3]))<0) umin=sqrt(1.-exp((M1+M2-(pmass[2]+pmass[3]))/(3.*T)));
-          a=simpson(u_integrand_,umin,1.,eps)*3.8937966E8;
+          a=simpson(u_integrand_thresallow,umin,1.,eps)*3.8937966E8;
        }   
        break;
      case 3:
