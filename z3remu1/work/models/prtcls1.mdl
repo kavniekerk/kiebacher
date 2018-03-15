@@ -3,7 +3,7 @@ brokenU(1)
  Full  name  | A  | A  |  PDG   |2*spin| mass |width |color|aux| LaTex(A) | LaTeX(A+)    |
 gluon        |G   |G   |21      |2     |0     |0     |8    |G  |g         |g
 photon       |A   |A   |22      |2     |0     |0     |1    |G  |\gamma    |\gamma
-Z-boson      |Z   |Z   |23      |2     |MZ2    |!wZ   |1    |G  |Z         |Z
+Z-boson      |Z   |Z   |23      |2     |MZ    |!wZ   |1    |G  |Z         |Z
 W-boson      |W+  |W-  |24      |2     |MW    |!wW   |1    |G  |W^+       |W^-
 Higgs        |h   |h   |25      |0     |Mh    |!wh   |1    |   |h         |h
 electron     |e   |E   |11      |1     |0     |0     |1    |   |e^-       |e^+
@@ -18,7 +18,7 @@ s-quark      |s   |S   |3       |1     |0     |0     |3    |   |s         |\bar{
 c-quark      |c   |C   |4       |1     |Mc    |0     |3    |   |c         |\bar{c}
 b-quark      |b   |B   |5       |1     |Mb    |0     |3    |   |b         |\bar{b}
 t-quark      |t   |T   |6       |1     |Mt    |!wt   |3    |   |t         |\bar{t}
-Z'- boson    |~ZZ |~ZZ |31      |2     |MDZ   |!wZZ  |1    |0  |Z'        |Z'
+Z'- boson    |~ZZ |~ZZ |31      |2     |MDZ   |0     |1    |0  |Z'        |Z'
 Dark matter  |~x  |~X  |32      |0     |Mcdm  |0     |1    |0  |\chi      |\bar{\chi}
 Dark Higgs   |~H  |~H  |33      |0     |MDH   |!wDH  |1    |0  |h_2       |h_2
 ==========================================================================================

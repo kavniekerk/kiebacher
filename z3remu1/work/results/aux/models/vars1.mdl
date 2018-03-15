@@ -15,18 +15,19 @@ brokenU(1)
  MZ            |91.189       |Z-boson mass
  MW            |80.385       |W-boson mass
  Mh            |125.0        |higgs mass
+ MZ2           |91.189       |modified Z Boson mass                                      |
 EPS            |0.00002      |coupling to visible sector
-MUH            |10.         |\mu_H
-MUP            |10.         |\mu_\phi
-MUC            |0.2          |\mu_\chi
-lamPC          |0.01        |lambda_phi chi
-lamCH          |0.01        |lambda_chi H
-lamPH          |0.01        |lambda_phi H
-lamchi         |0.1        |lambda_chi
-lamphi         |0.1        |lambda_phi
-lamH           |0.1        |lambda_H
-KAP            |0.1         |kappa for x^3phi^dag
-RATIO          |1.6          |Dark gauge boson Z' mass
+MUH            |0.01         |\mu_H
+MUP            |0.01         |\mu_\phi
+MUC            |0.01         |\mu_\chi
+lamPC          |0.001        |lambda_phi chi
+lamCH          |0.001        |lambda_chi H
+lamPH          |0.001        |lambda_phi H
+lamchi         |0.003        |lambda_chi
+lamphi         |0.003        |lambda_phi
+lamH           |0.003        |lambda_H
+KAP            |0.01         |kappa for x^3phi^dag
+MDZ            |53.782       |Dark gauge boson Z' mass
 gXhat					 |3.3				   | \hat{g}_X =g_X/cos(epsilon) Dark coupling constant
 qd 						 |3.0					 | Dark charge of Dark higgs
 ==========================================================================================

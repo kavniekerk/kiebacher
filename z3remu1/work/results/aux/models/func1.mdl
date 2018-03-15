@@ -20,15 +20,12 @@ brokenU(1)
  Vtd                   |s12*s23-c12*c23*s13           % C-K-M matrix element
  Vts                   |-c12*s23-s12*c23*s13          % C-K-M matrix element
  Vtb                   |c23*c13                       % C-K-M matrix element
-VEW                    |sqrt((4*lamphi*MUH^2-2*lamPH*MUP^2)/(4*lamH*lamphi-lamPH^2))   % VEV of SM higgs field
+VEW                    |sqrt((4*lamphi*MUH^2-2*lamPH*MUP^2)/(4*lamH*lamphi-lamPH^2))     % VEV of SM higgs field
 VDH                    |sqrt((4*lamH*MUP^2-2*lamPH*MUH^2)/(4*lamH*lamphi-lamPH^2))       % VEV of dark higgs field
-dhi                    |(lamH*VEW^2-VDH^2*lamphi) % delta 
-MDH                    |sqrt(Mh^2+2*sqrt(dhi^2+lamPH^2*VEW^2*VDH^2)) % Mass of dark higgs
+MDH                    |sqrt(Mh^2+2*sqrt((lamH*VEW^2-VDH^2*lamphi)^2+(lamPH*VEW*VDH)^2)) % Mass of dark higgs
 Mcdm                   |sqrt(MUC^2+lamPC*VDH^2/2+lamCH*VEW^2/2)   % Mass of DM
-MDZ                    |RATIO*Mcdm            % of Dark gauge boson
 MZtilde                |MW/CW   % Mass of \tilde{MZ}
-dalhiggs               |(lamH*(VEW)^2-(VDH)^2*lamphi) % delta 
-alhiggs                |asin(2*lamPH*VEW*VDH/(2*sqrt(dalhiggs^2+(lamPH*VEW*VDH)^2)))/2 % mixing angel between dark and SM higgs
+alhiggs                |asin(2*lamPH*VEW*VDH/(2*sqrt((lamH*VEW^2-lamphi*VDH^2)^2+(lamPH*VEW*VDH)^2)))/2 % mixing angel between dark and SM higgs
 xi                     |atan(((gXhat*VDH/(MDZ*cos(EPS)))^2-1)/(SW*tan(EPS)))  % mixing angel between dark and SM weak gauge bosons
 cosDG                  |cos(xi)          % cos(dark Gauge bosons mixing angel=xi)
 sinDG                  |sqrt(1-cosDG^2)  % sin(xi)

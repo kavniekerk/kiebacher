@@ -6,10 +6,11 @@ cd ../
 make
 cd ./z3remu1
 make
+mkdir lastdata
 
 ./main $PAR
-
-plo="gnu.g"	
+cp -u data ./lastdata/data
+plo="lastdata/gnu.g"	
 touch ./$plo
 > ./$plo
 echo "reset" >> $plo
