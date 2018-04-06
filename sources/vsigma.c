@@ -72,7 +72,7 @@ static double u_integrand_thresallow( double u)
    if(u==0. || u==1.) return 0.;
    z=1-u*u;
    sqrtS=M1+M2-3*T_*log(z);
-   if(sqrtS<=M1+M2 && sqrtS<=pmass[2]+pmass[3]) return 0;
+   if(sqrtS<=M1+M2 || sqrtS<=pmass[2]+pmass[3]) return 0;
    return s_integrandT_(sqrtS )*6*T_*u/z;
 }
 
@@ -281,11 +281,11 @@ double vSigmaCC32 (double T,numout* cc, int mode)//32add
   { 
      case 2:
        if(T==0) a=vcs22(cc,1,&err); else
-       {  double eps=1.E-9, umin=0.;
+       {  double eps=1.E-14, umin=0.;
           sqme22=CI->sqme;
           nsub22=1;
           if((M1+M2-(pmass[2]+pmass[3]))<0) umin=sqrt(1.-exp((M1+M2-(pmass[2]+pmass[3]))/(3.*T)));
-          a=simpson(u_integrand_thresallow,umin,1.,eps)*3.8937966E8;
+          a=simpson(u_integrand_thresallow,umin,1.,eps);// natural units
        }   
        break;
      case 3:
@@ -404,7 +404,7 @@ double vSigmaCC(double T,numout* cc, int mode)
     if(dmOut==2) return 0; 
   }    
  
-  for(i=2,msum=0;i<CI->nout;i++) msum+=pmass[i];
+  for(i=2,msum=0;i<(2+CI->nout);i++) msum+=pmass[i];
   
   sqrtSmin=M1+M2;
   
@@ -423,10 +423,11 @@ double vSigmaCC(double T,numout* cc, int mode)
   { 
      case 2:
        if(T==0) a=vcs22(cc,1,&err); else
-       {  double eps=1.E-3;
+       {  double eps=1.E-9,umin=0;
           sqme22=CI->sqme;
           nsub22=1;
-          a=simpson(u_integrand_,0.,1.,eps)*3.8937966E8;
+          if((M1+M2-(pmass[2]+pmass[3]))<0) umin=sqrt(1.-exp((M1+M2-(pmass[2]+pmass[3]))/(3.*T)));//adjusting integration range
+          a=simpson(u_integrand_thresallow,umin,1.,eps)*3.8937966E8;
        }   
        break;
      case 3:

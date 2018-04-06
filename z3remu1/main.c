@@ -52,8 +52,8 @@ int main(int argc,char** argv)
 #endif
 
 #ifdef OMEGA
-{ int fast=-1;
-  double Beps=1.E-5, cut=1.e-160;
+{ int fast=0;
+  double Beps=1.E-7, cut=1.e-160;
   double Omega;  
   int i,err; 
   printf("\n==== Calculation of relic density =====\n");   
@@ -66,51 +66,53 @@ int main(int argc,char** argv)
     printf("Omega_2h^2=%.2E\n", Omega*fracCDM2);
   } else
   {  double Xf;
-     Omega=darkOmega(&Xf,fast,Beps);
+     Omega=darkOmega32(&Xf,fast,Beps);
      printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
      if(Omega>0)printChannels(Xf,cut,Beps,1,stdout);
   }
-	double x, dx=0.8,vs;
+	double x, dx=0.8,vs, val=0;
+	val=findValW("VEW");
+	printf("VEW\t=\t%f\n", val);
+	val=findValW("VDH");
+	printf("VDH\t=\t%f\n", val);
 	FILE * fp=fopen("data", "w+");
-	numout * cc=newProcess("~x,~x->~x,~X,~X"),*cc22=newProcess("~x,~X->W+,W-");//("~x1,~x1->~x1,~X1,~X1");//,~X1"~x1,~X1->W+,W-"
+	numout * cc=newProcess("~x,~x->~x,~X,~X"),*cc22=newProcess("~x,~X->d,D");//("~x1,~x1->~x1,~X1,~X1");//,~X1"~x1,~X1->W+,W-"
 	double hubb,Rin,Rout,Rin22,Rout22,s,d,d22,vs22,noint,neq,nF, M_Pl=1.22066e19;
-	int rep22=0,rep=0,count=10;
+	int rep22=0,rep=0,count=20;
 	double xstart=Mcdm/Tstart,xend=Mcdm/Tend;
-	for (x =3 ; x< 110; x+=dx,count++)
+	for (x =3 ; x< 50; x+=dx,count++)
 		{
-		if (x>19 && x<30 && rep==0) x-=0.8*dx;
+		if (x>19 && x<30 && rep==0) x-=0.2*dx;
 		s=s_dens(Mcdm/x);
 		neq=s*Yeq(Mcdm/x);
 		nF=s*YF(Mcdm/x);
 		vs22=vSigmaCC32(Mcdm/x,cc22,0);
 		vs=vSigmaCC32(Mcdm/x,cc,0);
-		if (vs==0 && rep<12) 
+		if (vs==0 && rep<10) 
 			{
 			vs= vSigmaCC32(Mcdm/x,cc,0);
 			rep++;
 			//printf("repeating calculation\n\n");
+			x-=dx;
+			count--;
 			continue;
 			}
-		if (vs22==0 && rep22<6)
+		if (vs22==0 && rep22<2)
 			{
-			vs22= vSigmaCC(Mcdm/x,cc22,0);
+			vs22= vSigmaCC32(Mcdm/x,cc22,0);
 			//printf("repeating calculation\n\n");
 			rep22++;
+			x-=dx;
+			count--;
 			continue;
 			}
 		rep=0;
-		vs22= vSigma(Mcdm/x, Beps,fast);
 		Rin=vs*(nF-nF*nF/neq);
-		Rout=vs;
-		Rin22=-vs22*(nF-neq*neq/nF);
-		Rout22=vs22;
-		hubb=H_rate(Mcdm/x);
-		d=fabs( Rin-Rout);
-		d22=fabs(3.*hubb+Rin22+Rin);
-		
-		if(count%10==0)fprintf(stdout,"%s\t%s\t\t%s\t\t%s\t\t%s\t\t%s\n", "x","YF(x)","R_tot","R_32","R_22","3H");
-		fprintf(fp,    "%f\t%e\t%e\t%e\t%e\t%e\n"            , x,YF(Mcdm/x), d22, Rin,Rin22,3.*hubb);
-		fprintf(stdout,"%.2f\t%.2e\t%.2e\t%.2e\t%.2e\t%.2e\n", x,YF(Mcdm/x), d22, Rin,Rin22,3.*hubb);
+		Rin22=vs22*(nF-neq*neq/nF);
+		hubb=H_rate(Mcdm/x);		
+		if(count%20==0)fprintf(stdout,"%s\t%s\t\t%s\t\t%s\t\t%s\t\t%s\n", "x","YF(x)","Yeq(x)","R_32","R_22","vs32");
+		fprintf(fp,    "%f\t%e\t%e\t%e\t%e\t%e\n"            , x,YF(Mcdm/x), vs22, fabs(Rin),fabs(Rin22),vs);
+		fprintf(stdout,"%.2f\t%.2e\t%.2e\t%.2e\t%.2e\t%.2e\n", x,YF(Mcdm/x), vs22, fabs(Rin),fabs(Rin22),vs);
 		//fprintf(stdout,"%f\t%e\t%e\n", x, dcs,chi2);
 		}
 		
