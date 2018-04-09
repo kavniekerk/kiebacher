@@ -36,16 +36,16 @@ int nModelVars=28;
 int nModelFunc=25;
 static char*varNames_[53]={
  "EE","alfSMZ","Q","s12","s23","s13","Mm","Ml","McMc","MbMb"
-,"Mtp","MZ","MW","Mh","EPS","MUH","MUP","MUC","lamPC","lamCH"
+,"Mtp","MZ","MW","Mh","EPS","MUH","MUP","Mcdm","lamPC","lamCH"
 ,"lamPH","lamchi","lamphi","lamH","KAP","RATIO","gXhat","qd","CW","SW"
 ,"GF","LamQCD","Mb","Mt","Mc","c12","c23","c13","Vud","Vus"
 ,"Vub","Vcd","Vcs","Vcb","Vtd","Vts","Vtb","VEW","VDH","dhi"
-,"MDH","Mcdm","MDZ"};
+,"MDH","MUC","MDZ"};
 char**varNames=varNames_;
 static REAL varValues_[53]={
    3.134300E-01,  1.184000E-01,  1.000000E+02,  2.210000E-01,  4.100000E-02,  3.500000E-03,  1.057000E-01,  1.777000E+00,  1.200000E+00,  4.250000E+00
-,  1.730700E+02,  9.118900E+01,  8.038500E+01,  1.250000E+02,  1.000000E-07,  5.200000E+00,  7.300000E+00,  4.000000E-01,  1.000000E-01,  1.000000E-01
-,  1.000000E-01,  1.000000E-01,  1.000000E-01,  1.000000E-01,  1.100000E+00,  2.030000E+01,  6.300000E+00,  3.000000E+00};
+,  1.730700E+02,  9.118900E+01,  8.038500E+01,  1.250000E+02,  1.000000E-07,  5.200000E+00,  7.300000E+00,  2.400000E+00,  1.000000E-01,  1.000000E-01
+,  1.000000E-01,  1.000000E-01,  1.000000E-01,  1.000000E-01,  1.100000E+00,  1.003000E+02,  6.300000E+00,  3.000000E+00};
 REAL*varValues=varValues_;
 int calcMainFunc(void)
 {
@@ -108,9 +108,9 @@ int calcMainFunc(void)
    if(!isfinite(V[49]) || FError) return 49;
    V[50]=sqrt(pow(V[13],2)+2*sqrt(pow(V[49],2)+pow(V[20],2)*pow(V[47],2)*pow(V[48],2)));
    if(!isfinite(V[50]) || FError) return 50;
-   V[51]=sqrt(pow(V[17],2)+V[18]*pow(V[48],2)/(2)+V[19]*pow(V[47],2)/(2));
+   V[51]=I*sqrt(-(pow(V[17],2)-V[18]*pow(V[48],2)/(2)-V[19]*pow(V[47],2)/(2)));
    if(!isfinite(V[51]) || FError) return 51;
-   V[52]=V[25]*V[51];
+   V[52]=V[25]*V[17];
    if(!isfinite(V[52]) || FError) return 52;
    if(VV==NULL) 
    {  VV=malloc(sizeof(REAL)*nModelVars);

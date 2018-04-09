@@ -18,7 +18,7 @@ brokenU(1)
 EPS            |0.0000001    |coupling to visible sector
 MUH            |5.2          |\mu_H
 MUP            |7.3         |\mu_\phi
-MUC            |0.4          |\mu_\chi
+Mcdm           |2.4          |\m_\chi
 lamPC          |0.1         |lambda_phi chi
 lamCH          |0.1         |lambda_chi H
 lamPH          |0.1         |lambda_phi H
@@ -26,7 +26,7 @@ lamchi         |0.1         |lambda_chi
 lamphi         |0.1         |lambda_phi
 lamH           |0.1         |lambda_H
 KAP            |1.1          |kappa for x^3phi^dag
-RATIO          |20.3          |Dark gauge boson Z' mass
+RATIO          |100.3          |Dark gauge boson Z' mass
 gXhat					 |6.3				   | \hat{g}_X =g_X/cos(epsilon) Dark coupling constant
 qd					   |3.				     | dark Charge 
 ==========================================================================================

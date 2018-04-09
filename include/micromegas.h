@@ -175,16 +175,18 @@ extern aChannel*omegaCh;
 extern aChannel* vSigmaTCh;
 
 extern double vSigmaCC(double T,numout* cc,int mode);
-extern double vSigmaCC32(double T,numout* cc,int mode);//32add
+extern double vSigmaCC23(double T,numout* cc,int mode);//32add
+extern double vSigmaCC23_sub (double T,numout* cc,int nsub, int mode);//32add
    
 extern int loadHeffGeff(char*fname);
+extern int loadvs23(char*fname, int nsub32);
 extern double  hEff(double T);
 extern double  gEff(double T);
 extern double H_rate (double T);
 extern double s_dens (double T);
 extern double vSigma(double T,double Beps ,int Fast);
 extern double darkOmega(double *Xf,int Fast, double Beps);
-extern double darkOmega32(double *Xf,int Fast, double Beps);//32add
+extern double darkOmega23(double *Xf,int Fast, double Beps);//32add
 extern double darkOmega2(double fast, double Beps0);
 extern double darkOmegaExt(double *Xf, double (*f0)(double), double (*f1)(double));
 

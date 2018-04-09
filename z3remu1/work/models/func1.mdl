@@ -24,7 +24,7 @@ VEW                    |sqrt((4*lamphi*MUH^2-2*lamPH*MUP^2)/(4*lamH*lamphi-lamPH
 VDH                    |sqrt((4*lamH*MUP^2-2*lamPH*MUH^2)/(4*lamH*lamphi-lamPH^2))       % VEV of dark higgs field
 dhi                    |(lamH*VEW^2-VDH^2*lamphi) % delta 
 MDH                    |sqrt(Mh^2+2*sqrt(dhi^2+lamPH^2*VEW^2*VDH^2)) % Mass of dark higgs
-Mcdm                   |sqrt(MUC^2+lamPC*VDH^2/2+lamCH*VEW^2/2)   % Mass of DM
+MUC                    |i*sqrt(-(Mcdm^2-lamPC*VDH^2/2-lamCH*VEW^2/2))   % Mass of DM
 MDZ                    |RATIO*Mcdm            % of Dark gauge boson
 MZtilde                |MW/CW   % Mass of \tilde{MZ}
 dalhiggs               |(lamH*(VEW)^2-(VDH)^2*lamphi) % delta 

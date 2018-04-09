@@ -66,7 +66,7 @@ int main(int argc,char** argv)
     printf("Omega_2h^2=%.2E\n", Omega*fracCDM2);
   } else
   {  double Xf;
-     Omega=darkOmega32(&Xf,fast,Beps);
+     Omega=darkOmega23(&Xf,fast,Beps);
      printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
      if(Omega>0)printChannels(Xf,cut,Beps,1,stdout);
   }
@@ -86,11 +86,11 @@ int main(int argc,char** argv)
 		s=s_dens(Mcdm/x);
 		neq=s*Yeq(Mcdm/x);
 		nF=s*YF(Mcdm/x);
-		vs22=vSigmaCC32(Mcdm/x,cc22,0);
-		vs=vSigmaCC32(Mcdm/x,cc,0);
-		if (vs==0 && rep<10) 
+		vs22=vSigmaCC23(Mcdm/x,cc22,0);
+		vs=vSigmaCC23(Mcdm/x,cc,0);
+		if (vs==0 && rep<20) 
 			{
-			vs= vSigmaCC32(Mcdm/x,cc,0);
+			//vs= vSigmaCC23(Mcdm/x,cc,0);
 			rep++;
 			//printf("repeating calculation\n\n");
 			x-=dx;
@@ -99,7 +99,7 @@ int main(int argc,char** argv)
 			}
 		if (vs22==0 && rep22<2)
 			{
-			vs22= vSigmaCC32(Mcdm/x,cc22,0);
+			vs22= vSigmaCC23(Mcdm/x,cc22,0);
 			//printf("repeating calculation\n\n");
 			rep22++;
 			x-=dx;

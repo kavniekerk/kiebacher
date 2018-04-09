@@ -5,7 +5,6 @@
 #include "micromegas_f.h"
 #include "../CalcHEP_src/include/rootDir.h" 
 
-
 char* CDM1=NULL, *CDM2=NULL,*aCDM1=NULL,*aCDM2=NULL;
 aChannel* omegaCh=NULL;
 aChannel* vSigmaTCh=NULL;
@@ -25,7 +24,7 @@ extern double cs23(numout*cc, int nsub, double Pcm, int ii3);
 typedef  struct{ int virt,i3;double br,w[2];numout*cc23; int nTab; double *pcmTab; double *csTab;} processAuxRec;
 
 typedef  processAuxRec* processAux;
-static   processAux* code22Aux0, *code22Aux1,*code22Aux2;
+static   processAux* code22Aux0, *code22Aux1,*code22Aux2,*code23Aux3;
 
 static   processAux AUX;
 
@@ -45,10 +44,12 @@ static int  *  inNum;
 static numout ** code22_0;
 static numout ** code22_1;
 static numout ** code22_2;
+static numout ** code23_3;
 
 static int *inC0;    /* combinatoric coefficients  NCxNC*/
 static int *inC1; 
 static int *inC2;
+static int *inC3;
 static numout*cc23=NULL;
 
 static REAL **inMassAddress;
@@ -74,7 +75,7 @@ static double s3f_;   /* to pass the Xf argument   */
 static double T_;
 
 static int Tdim=0;
-static double *t_=NULL, *heff_=NULL, *geff_=NULL, *s3_=NULL;
+static double *t_=NULL, *heff_=NULL, *geff_=NULL, *s3_=NULL, *vs32_=NULL;
 
 static int Z4ch( char *name)
 {  if(name[0]!='~') return 0;
@@ -82,6 +83,21 @@ static int Z4ch( char *name)
    return 2;
 }
 
+int loadvs23(char*fname, int nsub32) //tabulating 3->2 processes
+{  double *tabs[2];
+   int nRec,nCol,i;
+   nRec=readTable(fname,&nCol,tabs);
+   if(nRec<=0) return nRec;
+   if(nCol!=nsub32+1)
+   { for(i=0;i<nCol;i++) free(tabs[i]);
+		printf("Could not read table of 3->2 thermally averaged crosssections\nwrong colums colum number\n");
+     return 0;
+   }
+   if(vs32_)free(vs32_);
+   t_=tabs[0];
+   vs32_=tabs[1];
+   return nRec;
+}
 
 int loadHeffGeff(char*fname)
 {  double *tabs[3];
@@ -264,7 +280,12 @@ static double s_integrand( double u)
 }
 
 
-static  double m2v(double m) { long double  e=expl(((M1+M2 -m)/T_)/3); if(e>=1) return e; else return e/(1+sqrtl(1-e));} 
+static  double m2v(double m) 
+{ 
+	long double  e=expl(((M1+M2 -m)/T_)/3); 
+	if(e>=1) return e; 
+	else return e/(1+sqrtl(1-e));
+} 
 
 
 typedef struct vGridStr
@@ -399,14 +420,17 @@ static int testSubprocesses(void)
     code22_0 = (numout**)malloc(NC*NC*sizeof(numout*));
     code22_1 = (numout**)malloc(NC*NC*sizeof(numout*));
     code22_2 = (numout**)malloc(NC*NC*sizeof(numout*));
+    code23_3 = (numout**)malloc(NC*NC*sizeof(numout*));
             
     inC0=(int*)malloc(NC*NC*sizeof(int)); 
     inC1=(int*)malloc(NC*NC*sizeof(int));
     inC2=(int*)malloc(NC*NC*sizeof(int));
+    inC3=(int*)malloc(NC*NC*sizeof(int));
             
     code22Aux0=(processAux*) malloc(NC*NC*sizeof(processAux));
     code22Aux1=(processAux*) malloc(NC*NC*sizeof(processAux));
     code22Aux2=(processAux*) malloc(NC*NC*sizeof(processAux));
+    code23Aux3=(processAux*) malloc(NC*NC*sizeof(processAux));
     
     for(i=0,j=0;i<Nodd;i++)
     {  
@@ -440,13 +464,15 @@ static int testSubprocesses(void)
     { int L=k1*NC+k2;
        code22_0[L]=NULL;
        code22_1[L]=NULL;
-
        code22_2[L]=NULL;
+       code23_3[L]=NULL;
        code22Aux0[L]=NULL;
        code22Aux1[L]=NULL;
        code22Aux2[L]=NULL;
+       code23Aux3[L]=NULL;
        inC1[L]=inC0[L];
        inC2[L]=inC0[L];
+       inC3[L]=inC0[L];
     }    
 
     for(i=0,j=0;i<Nodd;i++)
@@ -532,6 +558,7 @@ static int testSubprocesses(void)
   {  if(code22_0[k1*NC+k2]) code22_0[k1*NC+k2]->init=0;
      if(code22_1[k1*NC+k2]) code22_1[k1*NC+k2]->init=0;
      if(code22_2[k1*NC+k2]) code22_2[k1*NC+k2]->init=0;
+     if(code23_3[k1*NC+k2]) code23_3[k1*NC+k2]->init=0;
   }             
   cleanDecayTable();
 
@@ -574,7 +601,25 @@ static int testSubprocesses(void)
         if(prc[n].csTab)  { free(prc[n].csTab);  prc[n].csTab=NULL; }  
     }     
   }
-
+  for(k1=0;k1<NC;k1++) for(k2=0;k2<NC;k2++) if( code23_3[k1*NC+k2])
+  { int  nprc=code23_3[k1*NC+k2]->interface->nprc;
+    processAux prc=code23Aux3[k1*NC+k2];
+    int n;
+    for(n=0;n<=nprc;n++)
+    { 
+        prc[n].w[0]=0;
+        prc[n].w[1]=0;
+        prc[n].virt=0;
+        prc[n].i3=0;  
+        prc[n].br=0;  
+        prc[n].cc23=NULL;
+        prc[n].virt=0; 
+        
+        prc[n].nTab=0;   
+        if(prc[n].pcmTab) { free(prc[n].pcmTab); prc[n].pcmTab=NULL;}
+        if(prc[n].csTab)  { free(prc[n].csTab);  prc[n].csTab=NULL; }  
+    }     
+  }
   
   return 0;
 }
@@ -691,6 +736,72 @@ char * EvenParticles(void)
 }
 
 
+static int  new_code23(int k1,int k2, int ch)
+{
+   char lib[40];
+   char process[400];
+   char lib1[12],lib2[12];
+   numout*cc;
+  
+   pname2lib(inP[k1],lib1);
+   pname2lib(inP[k2],lib2); 
+   sprintf(lib,"omg_%s%s",lib1,lib2);
+   switch(ch)
+   { case  0: sprintf(process,"%s,%s->AllEven,1*x{%s",inP[k1],inP[k2],EvenParticles()); break;
+     case  3: sprintf(process,"%s,%s->AllOdd1,AllOdd1,AllOdd1{%s",inP[k1],inP[k2],OddParticles(1));
+						strcat(lib,"_3"); break;
+     case  1: sprintf(process,"%s,%s->AllOdd1,AllOdd1{%s",inP[k1],inP[k2],OddParticles(1));
+             strcat(lib,"_1"); break;
+     case -1: sprintf(process,"%s,%s->AllOdd2,AllOdd2{%s",inP[k1],inP[k2],OddParticles(2));
+             strcat(lib,"_2"); break;
+     case  2: sprintf(process,"%s,%s->AllOdd1,AllOdd2{%s{%s",inP[k1],inP[k2],OddParticles(1),OddParticles(2));
+                  strcat(lib,"_12"); break;                        
+   } 
+   cc=getMEcode(0,ForceUG,process,NULL,NULL,lib);
+   if(cc) 
+   {  int nprc,n;
+      processAux prc;
+      *(cc->interface->twidth)=1;
+      switch(ch)
+      { case  0:  code22_0[k1*NC+k2]=cc; break;
+        case  1: 
+        case -1:  code22_1[k1*NC+k2]=cc; break;
+        case  3:  code23_3[k1*NC+k2]=cc; break;
+        case  2:  code22_2[k1*NC+k2]=cc; break;
+      }  
+      nprc=cc->interface->nprc;
+      prc=(processAux)malloc((nprc+1)*sizeof(processAuxRec));
+      
+      switch(ch)
+      { case  0: code22Aux0[k1*NC+k2]=prc; break;
+        case  1: 
+        case  3: code23Aux3[k1*NC+k2]=prc; break;
+        case -1: code22Aux1[k1*NC+k2]=prc; break;
+        case  2: code22Aux2[k1*NC+k2]=prc; break;
+      }  
+      for(n=0;n<=nprc;n++)
+      { 
+        prc[n].w[0]=0;
+        prc[n].w[1]=0;
+        prc[n].virt=0;
+        prc[n].i3=0; 
+        prc[n].br=0; 
+        prc[n].cc23=NULL;
+        prc[n].nTab=0;   
+        prc[n].pcmTab=NULL;
+        prc[n].csTab=NULL;                          
+      }   
+   } else 
+   {  switch(ch)
+      { case  0:  inC0[k1*NC+k2]=0; break;
+        case  1:  
+        case -1:  inC1[k1*NC+k2]=0; break;
+        case  2:  inC2[k1*NC+k2]=0; break;
+      }
+   }   
+   return 0;
+}
+
 static int  new_code(int k1,int k2, int ch)
 {
    char lib[40];
@@ -747,12 +858,12 @@ static int  new_code(int k1,int k2, int ch)
       { case  0:  inC0[k1*NC+k2]=0; break;
         case  1:  
         case -1:  inC1[k1*NC+k2]=0; break;
+        case  3:  inC3[k1*NC+k2]=0; break;
         case  2:  inC2[k1*NC+k2]=0; break;
       }
    }   
    return 0;
 }
-
 
 static int Ntab=0;
 static double*Ttab=NULL;
@@ -1142,6 +1253,316 @@ exit(1);
   return Sum;
 }
 
+static double aRate23(double X, int average,int Fast, double * alpha, aChannel ** wPrc,int *NPrc)
+{
+  double Sum=0.;
+  double Sum1=0;
+  int i,l1,l2;
+  int nPrc=0;
+  char* pname[5];
+  vGridStr vgrid,vgrid1;  
+  double MassCutOut=MassCut+Mcdm*log(1000.)/X;
+  double Msmall,Mlarge;
+
+  int nPrcTot=0;
+  if(MassCutOut<Mcdm*(2+10/X)) MassCutOut=Mcdm*(2+10/X); 
+  WIDTH_FOR_OMEGA=1;
+
+  T_=Mcdm/X;
+  s3f_=polint1(T_,Tdim,t_,s3_);
+  exi=average;
+
+  if(wPrc) *wPrc=NULL;
+
+  for(l1=0;l1<NC;l1++)
+  { int k1=sort[l1]; if(Mcdm+inMass[k1]>MassCut) break;
+  for(l2=0;l2<NC;l2++)
+  {
+    double Sumkk=0.;
+    double Sum1kk=0;
+    double x[2],f[2];
+    double factor;
+    int kk,k2=sort[l2];
+    CalcHEP_interface * CI;
+
+    if(inMass[k1]+inMass[k2] > MassCut) break;
+
+    if(inC0[k1*NC+k2]<=0) continue;
+    if(inC3[k1*NC+k2]<=0) continue;
+    if(code22_0[k1*NC+k2]==NULL) new_code23(k1,k2,0);
+    if(code23_3[k1*NC+k2]==NULL) new_code23(k1,k2,3); //add 3->2 code
+    if(inC0[k1*NC+k2]<=0) continue;
+    if(inC3[k1*NC+k2]<=0) continue;
+
+    if(!code22_0[k1*NC+k2]->init)
+    {
+      if(Qaddress && *Qaddress!=inMass[k1]+inMass[k2]) 
+      { *Qaddress=inMass[k1]+inMass[k2];
+         calcMainFunc();
+      }       
+      if(passParameters(code22_0[k1*NC+k2])) {FError=1; WIDTH_FOR_OMEGA=0;  return -1;}
+      code22_0[k1*NC+k2]->init=1;
+    }
+
+    if(wPrc)
+    {  nPrcTot+=code22_0[k1*NC+k2]->interface->nprc;
+       *wPrc=(aChannel*)realloc(*wPrc,sizeof(aChannel)*(nPrcTot+1));
+    }
+
+    sqme22=code22_0[k1*NC+k2]->interface->sqme;
+    inBuff=0;
+
+    M1=inMass[k1];
+    M2=inMass[k2];
+
+
+    Msmall=M1>M2? M1-Mcdm*(1-sWidth): M2-Mcdm*(1-sWidth);
+    Mlarge=M1>M2? M2+Mcdm*(1-sWidth): M1+Mcdm*(1-sWidth);
+
+    v_min=m2v(MassCutOut);
+    if(v_min<1E-200) v_min=1E-200; 
+
+    factor=inC0[k1*NC+k2]*inG[k1]*inG[k2]*exp(-(M1+M2 -2*Mcdm)/T_);
+    CI=code22_0[k1*NC+k2]->interface;
+    AUX=code22Aux0[k1*NC+k2];
+    for(nsub22=1; nsub22<= CI->nprc;nsub22++,nPrc++)
+    { double smin;
+      double a=0;
+      double K=0;
+      for(i=0;i<4;i++) pname[i]=CI->pinf(nsub22,i+1,pmass+i,pdg+i);  
+      if(wPrc) 
+      { (*wPrc)[nPrc].weight=0;
+        for(i=0;i<4;i++) (*wPrc)[nPrc].prtcl[i]=pname[i];
+        (*wPrc)[nPrc].prtcl[4]=NULL;
+      }
+
+      if(pmass[0]<Mcdm/2 || pmass[1]<Mcdm/2) continue; 
+      
+      smin=pmass[2]+pmass[3];
+      cc23=NULL;
+      if(VZdecay||VWdecay)
+      {  int l,l_,nVV;        
+
+         if(!AUX[nsub22].virt )  for(l=2;l<4;l++) if(pdg[l]==21 ||pdg[l]==22) { AUX[nsub22].virt=-1; break;}
+         
+         if(!AUX[nsub22].virt)
+         {  int vd[4]={0,0,0,0};
+            int c_a =  (pmass[0]>Mcdm) || (pmass[1]>Mcdm);
+
+            if(c_a){ for(l=2;l<4;l++) if((pdg[l]==23 && VZdecay>1)   || (abs(pdg[l])==24 && VWdecay>1)) vd[l]=1;} 
+            else    for(l=2;l<4;l++)
+            { 
+            
+              if((pdg[l]==23 && VZdecay)     || (abs(pdg[l])==24 && VWdecay)) vd[l]=1;
+            } 
+
+            for(l=2;l<4;l++) if(vd[l]) break; 
+            if(l<4)
+            {  l_=5-l; 
+               if(vd[l_])
+               { nVV=2;
+                 if(pmass[l_]>pmass[l]) { l=l_; l_=5-l;}
+               } else nVV=1; 
+               AUX[nsub22].virt=l;  
+               AUX[nsub22].w[l-2]=pWidth(pname[l],NULL);
+               if(abs(pdg[l_])>16 && pmass[l_]> 2) AUX[nsub22].w[l_-2]=pWidth(pname[l_],NULL);
+               if(AUX[nsub22].w[l_-2] < 0.1) AUX[nsub22].w[l_-2]=0;
+            } else  AUX[nsub22].virt=-1;
+         }
+
+         if(AUX[nsub22].virt>0)
+         {  l=AUX[nsub22].virt;
+            l_=5-l; 
+            if( (pmass[0]+pmass[1] < smin+ 4*AUX[nsub22].w[l-2])   && (pmass[l_]< MassCutOut))
+            {
+              if(AUX[nsub22].cc23) cc23=AUX[nsub22].cc23; else
+              {  double  brV1,wV1;
+                 int i3W;
+                 AUX[nsub22].cc23=xVtoxll(2,2,pname,pdg, l, &wV1, &brV1);
+                 if(pdg[l]==pdg[l_]) brV1*=2;
+                 AUX[nsub22].br=brV1;
+                 cc23=AUX[nsub22].cc23; 
+                 if(cc23)
+                 {   double Pcm0,PcmMax;
+                    *(cc23->interface->BWrange)=10000; 
+                    *(cc23->interface->gswidth)=1;  
+                    for(i3W=2;i3W<5;i3W++) if(strcmp(cc23->interface->pinf(1,i3W+1,NULL,NULL),pname[l_])==0) break; 
+                    AUX[nsub22].i3=i3W;   
+                    PcmMax=decayPcm(pmass[2]+pmass[3]+10*AUX[nsub22].w[l-2], pmass[0],pmass[1]);
+                    if( pmass[0]+pmass[1]>=pmass[l_]) Pcm0=Mcdm*0.01; else 
+                    Pcm0=1.01*decayPcm(pmass[l_], pmass[0],pmass[1]); 
+                    buildInterpolation(sigma23, Pcm0,PcmMax, 0.02,1.E-5, &(AUX[nsub22].nTab), &(AUX[nsub22].pcmTab), &(AUX[nsub22].csTab));
+/*
+    printf("nTab=%d\n", AUX[nsub22].nTab);
+   displayFunc(sigma23,Pcm0,PcmMax,"sigma23");
+   loadINTER(AUX[nsub22].nTab, AUX[nsub22].pcmTab,AUX[nsub22].csTab); 
+                displayFunc(INTER,Pcm0,PcmMax,"INTER"); 
+*/                
+                       
+                 }
+              }    
+              if(cc23){ smin=pmass[l_]+0.1;}
+            } 
+         }
+      }
+      
+      
+//if(cc23)  printf("23  %s %s -> %s %s\n", pname[0],pname[1],pname[2],pname[3]);
+    
+     
+//if(abs(pdg[2])!=24 && abs(pdg[3])!=24) continue; 
+
+      if(cc23==NULL) 
+      {                               
+         if( (pmass[2]>Mlarge && pmass[3]<Msmall)
+           ||(pmass[3]>Mlarge && pmass[2]<Msmall))
+            { *(CI->twidth)=1; *(CI->gtwidth)=1;} else { *(CI->twidth)=0; *(CI->gtwidth)=0;}
+      } 
+      *(CI->gswidth)=0;
+
+//*(CI->twidth)=0; *(CI->gtwidth)=0;
+
+      if(smin > pmass[0]+pmass[1])
+      { 
+        if((pmass[0]!=M1 || pmass[1]!=M2)&&(pmass[0]!=M2 || pmass[1]!=M1))
+        { double ms=pmass[0]+pmass[1];
+          double md=pmass[0]-pmass[1];
+          double Pcm=sqrt((smin-ms)*(smin+ms)*(smin-md)*(smin+md))/(2*smin);
+          smin=sqrt(M1*M1+Pcm*Pcm)+sqrt(M2*M2+Pcm*Pcm);
+        }      
+      }
+
+      if(pmass[0]+pmass[1]> smin) smin=pmass[0]+pmass[1];
+      v_max=m2v(smin); 
+//printf("v_min=%E v_max=%E  smin=%e\n", v_min,v_max,smin);      
+      if(v_max<=v_min) continue; 
+            
+repeat:
+      neg_cs_flag=0;
+       
+      if(Fast==0) a=simpson(s_integrand,v_min,v_max,eps); else
+      {
+          int isPole=0;
+          char * s;
+          int m,w,n;
+          double mass,width;
+
+          for(n=1;(s=code22_0[k1*NC+k2]->interface->den_info(nsub22,n,&m,&w));n++)
+          if(m && w && strcmp(s,"\1\2")==0 )
+          { mass=fabs(code22_0[k1*NC+k2]->interface->va[m]);
+            width=code22_0[k1*NC+k2]->interface->va[w];
+            if(mass<MassCutOut && mass+8*width > pmass[0]+pmass[1]
+                            && mass+8*width > smin)
+            { if((pmass[0]!=M1 || pmass[1]!=M2)&&(pmass[0]!=M2 || pmass[1]!=M1))
+              { double ms=pmass[0]+pmass[1];
+                double md=pmass[0]-pmass[1];
+                double Pcm=sqrt((mass-ms)*(mass+ms)*(mass-md)*(mass+md))/(2*mass);
+                mass=sqrt(M1*M1+Pcm*Pcm)+sqrt(M2*M2+Pcm*Pcm);
+              }
+              vgrid1=makeVGrid(mass,width);
+              if(isPole) vgrid=crossVGrids(&vgrid,&vgrid1); else vgrid=vgrid1;
+              isPole++;
+            }
+          }
+                    
+          if(cc23)
+          {  double mass,width;
+             mass=pmass[2]+pmass[3];
+             width= AUX[nsub22].w[0]+ AUX[nsub22].w[1];
+             if(mass-width>M1+M2)
+             { //double u=m2u(mass-1*width);
+/*                if(u<0.96 && u>0.4)
+                { 
+                  grid1.n=2;
+                  grid1.ul[0]=0;
+                  grid1.ur[0]=grid1.ul[1]=u;
+                  grid1.pow[0]=3;
+                  grid1.ur[1]=1; 
+                  if(u<0.6) grid1.pow[1]=5; else grid1.pow[1]=3;
+                  if(isPole) grid=crossGrids(&grid,&grid1); else grid=grid1;
+                  isPole++;                  
+                } 
+*/                 
+             }
+          } 
+          if(isPole==0)
+          {  vgrid.n=1;
+             vgrid.v[0]=v_min;
+             vgrid.v[1]=v_max;
+             vgrid.pow[0]=5;
+          }
+//for(i=0;i<grid.n;i++) printf(" (%E %E) ",grid.ul[i],grid.ur[i]); printf("\n");
+/*          if(grid.n==1 && pmass[0]+pmass[1]> 1.1*(smin))
+                a=f[0]*sigma(x[0])+f[1]*sigma(x[1]);
+          else
+*/          
+           for(i=0;i<vgrid.n;i++)
+          {  
+             double da;
+             if(Fast>0)   da=gauss(s_integrand,vgrid.v[i],vgrid.v[i+1],vgrid.pow[i]);
+             else         da=simpson(s_integrand,vgrid.v[i],vgrid.v[i+1],eps); 
+             a+=da;             
+          }
+      } 
+
+      if(neg_cs_flag && *(CI->gswidth)==0)
+      { *(CI->gswidth)=1;
+         goto  repeat;
+      }   
+
+// printf("X=%.2E (%d) %.3E %s %s %s %s\n",X,average, a, pname[0],pname[1],pname[2],pname[3]);
+
+
+      for(kk=2;kk<4;kk++) if(pmass[kk]>2*Mcdm && pname[kk][0]!='~')
+      {  txtList LL;
+         double BrSm=1;
+         pWidth(pname[kk],&LL);
+         for(;LL;LL=LL->next)
+         { double b;
+           char proc[40];
+           sscanf(LL->txt,"%lf %[^\n]",&b,proc);
+           if( strchr(proc,'~'))BrSm-=b;
+         }
+         a*=BrSm;
+      }
+      
+      if(pname[2][0]=='~' || pname[3][0]=='~' ) { a/=2; Sum1kk+=a;}  
+      Sumkk+=a;
+      if(wPrc) (*wPrc)[nPrc].weight = a*factor;
+    }
+    Sum+=factor*Sumkk;
+    Sum1+=factor*Sum1kk;
+    
+/*
+printf("Sum=%E\n",Sum);
+*/
+  }
+  }
+  if(wPrc) 
+  { 
+//    for(i=0; i<nPrc;i++) printf("wPrc  %s %s -> %s %s %E\n",(*wPrc)[i].prtcl[0],(*wPrc)[i].prtcl[1],(*wPrc)[i].prtcl[2],
+//    (*wPrc)[i].prtcl[3],(*wPrc)[i].weight);
+  
+    for(i=0; i<nPrc;i++)  (*wPrc)[i].weight/=Sum;    
+    for(i=0;i<nPrc-1;)
+    {  if((*wPrc)[i].weight >= (*wPrc)[i+1].weight) i++; 
+       else
+       {  aChannel buff;
+          buff=(*wPrc)[i+1];(*wPrc)[i+1]=(*wPrc)[i];(*wPrc)[i]=buff;
+          if(i)i--;else i++;
+       }
+    }          
+    if(NPrc) *NPrc=nPrc; 
+    (*wPrc)[nPrc].weight=0; for(i=0;i<5;i++) (*wPrc)[nPrc].prtcl[i]=NULL; 
+  }  
+  if(!average) { double gf=geffDM(Mcdm/X);  Sum/=gf*gf; Sum1/=gf*gf;   }
+/*
+exit(1);
+*/
+  WIDTH_FOR_OMEGA=0;
+  if(alpha) {  *alpha=Sum1/Sum;  /*  printf("ALPHA=%E\n",*alpha);*/    }   
+  return Sum;
+}
 
 
 double vSigma(double T,double Beps ,int Fast)
@@ -1184,7 +1605,7 @@ static double vSigmaI(double T, double Beps, int fast,double * alpha_)
     vSigmaGrid.pow=1;
     vSigmaGrid.xtop=X;
     MassCut=Mcdm*(2-log(Beps)/X);
-    vSigmaGrid.data[0]= aRate(X,0,fast,&alpha,NULL,NULL);
+    vSigmaGrid.data[0]= aRate23(X,0,fast,&alpha,NULL,NULL);
     vSigmaGrid.alpha[0]=alpha;
     if(alpha_) *alpha_=alpha;     
     return vSigmaGrid.data[0];
@@ -1199,7 +1620,7 @@ static double vSigmaI(double T, double Beps, int fast,double * alpha_)
     }
     vSigmaGrid.xtop=XX;
     MassCut=Mcdm*(2-log(Beps)/XX);
-    vSigmaGrid.data[0]=aRate(XX,0,fast,&alpha,NULL,NULL);
+    vSigmaGrid.data[0]=aRate23(XX,0,fast,&alpha,NULL,NULL);
     vSigmaGrid.alpha[0]=alpha; 
     vSigmaGrid.pow++;
   }
@@ -1211,7 +1632,7 @@ static double vSigmaI(double T, double Beps, int fast,double * alpha_)
     XX=vSigmaGrid.xtop* pow(XSTEP,vSigmaGrid.pow)  ;
     checkSgridUpdate();
     MassCut=Mcdm*(2-log(Beps)/XX);
-    vSigmaGrid.data[vSigmaGrid.pow]=aRate(XX,0,fast,&alpha,NULL,NULL);
+    vSigmaGrid.data[vSigmaGrid.pow]=aRate23(XX,0,fast,&alpha,NULL,NULL);
     vSigmaGrid.alpha[vSigmaGrid.pow]=alpha;
     vSigmaGrid.pow++;
   }
@@ -1269,8 +1690,8 @@ static double dY(double s3, double Beps,double fast)
   return res;
 }
 
-static double dY32(double s3, double Beps,double fast)  //add 32
-{ double d, dlnYds3,Yeq0X, sqrt_gStar, vSig, vSig32,res;;
+static double dY23(double s3, double Beps,double fast)  //add 2->3 processes
+{ double d, dlnYds3,Yeq0X, sqrt_gStar, vSig, vSig23=0,res;;
   double epsY,alpha;
   double T,heff,geff;
   T=polint1(s3,Tdim,s3_,t_);   
@@ -1285,11 +1706,16 @@ static double dY32(double s3, double Beps,double fast)  //add 32
 /*
 double a=235.,b=1.36;//fit of sigv^2
   vSig32=a*exp(-b*Mcdm/T);*/
-  vSig32=0;
   vSig=vSigmaI(T,Beps, fast,&alpha);
+  for (int i=0;i<NC ;i++)
+		{
+		if (code23_3[i]==NULL) continue;
+		vSig23+=vSigmaCC23(T, code23_3[i],0);
+		printf("%i code\n",i);
+		}
   if(vSig <=0) return 10;
   if(vSig==0){ FError=1; return 0;}
-  res= dlnYds3/(pow(2*M_PI*M_PI/45.*heff,0.66666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*(vSig+vSig32)*MPlank
+  res= dlnYds3/(pow(2*M_PI*M_PI/45.*heff,0.66666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*(vSig+vSig23)*MPlank
   *(1-alpha/2)*sqrt(1+epsY*epsY))/Yeq(T);
   res=fabs(res);
   if(res>10) return 10;
@@ -1301,15 +1727,15 @@ static double darkOmega1(double * Xf,double Z1,double dZ1,int Fast,double Beps)
   double X = *Xf;
   double CCX=(Z1-1)*(Z1+1);
   double dCCX=(Z1-1+dZ1)*(Z1+1+dZ1)-CCX;
-  double ddY;
+  double ddY,TTT;
   double dCC1,dCC2,X1,X2;
     
   gaussInt= Fast? 1 : 0;
 
   if(Beps>=1) Beps=0.999;
   vSigmaGrid.pow=0;
-  
-  ddY=dY32(polint1(Mcdm/X,Tdim,t_,s3_) ,Beps,Fast); 
+  TTT=polint1(Mcdm/X,Tdim,t_,s3_);
+  ddY=dY(TTT ,Beps,Fast); 
   if(FError || ddY==0)  return -1;
   if(fabs(CCX-ddY)<dCCX) 
   { *Xf=X; MassCut=Mcdm*(2-log(Beps)/X); 
@@ -1323,7 +1749,7 @@ static double darkOmega1(double * Xf,double Z1,double dZ1,int Fast,double Beps)
      dCC1=dCC2;
      X2=X2/XSTEP;
      X=X2;
-     dCC2=-CCX+dY32(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast);
+     dCC2=-CCX+dY(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast);
      if(X<2)  return -1;   
      if(Mcdm/X>1.E5) return -1;
   }
@@ -1334,7 +1760,7 @@ static double darkOmega1(double * Xf,double Z1,double dZ1,int Fast,double Beps)
      dCC2=dCC1;
      X1=X1*XSTEP;
      X=X1;
-     dCC1=-CCX+dY32(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast); 
+     dCC1=-CCX+dY(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast); 
   }
   for(;;)
   { double dCC;
@@ -1343,10 +1769,63 @@ static double darkOmega1(double * Xf,double Z1,double dZ1,int Fast,double Beps)
     if(fabs(dCC2)<dCCX || fabs(X1-X2)<0.0001*X1) 
       {*Xf=X2; MassCut=Mcdm*(2-log(Beps)/X2); return Yeq(Mcdm/X2)*sqrt(1+CCX+dCC2);}
     X=0.5*(X1+X2); 
-    dCC=-CCX+dY32(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast);
+    dCC=-CCX+dY(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast);
     if(dCC>0) {dCC1=dCC;X1=X;}  else {dCC2=dCC;X2=X;} 
   }
 }
+
+static double darkOmega1_23(double * Xf,double Z1,double dZ1,int Fast,double Beps)
+{
+  double X = *Xf;
+  double CCX=(Z1-1)*(Z1+1);
+  double dCCX=(Z1-1+dZ1)*(Z1+1+dZ1)-CCX;
+  double ddY,TTT;
+  double dCC1,dCC2,X1,X2;
+    
+  gaussInt= Fast? 1 : 0;
+
+  if(Beps>=1) Beps=0.999;
+  vSigmaGrid.pow=0;
+  TTT=polint1(Mcdm/X,Tdim,t_,s3_);
+  ddY=dY23(TTT ,Beps,Fast); 
+  if(FError || ddY==0)  return -1;
+  if(fabs(CCX-ddY)<dCCX) 
+  { *Xf=X; MassCut=Mcdm*(2-log(Beps)/X); 
+    return Yeq(Mcdm/X)*sqrt(1+ddY);
+  } 
+   
+  dCC1=dCC2=ddY-CCX; ;X1=X2=X; 
+  while(dCC2>0) 
+  {  
+     X1=X2;
+     dCC1=dCC2;
+     X2=X2/XSTEP;
+     X=X2;
+     dCC2=-CCX+dY23(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast);
+     if(X<2)  return -1;   
+     if(Mcdm/X>1.E5) return -1;
+  }
+             
+  while (dCC1<0)
+  {  
+     X2=X1;
+     dCC2=dCC1;
+     X1=X1*XSTEP;
+     X=X1;
+     dCC1=-CCX+dY23(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast); 
+  }
+  for(;;)
+  { double dCC;
+    if(fabs(dCC1)<dCCX) 
+      {*Xf=X1; MassCut=Mcdm*(2-log(Beps)/X1); return Yeq(Mcdm/X1)*sqrt(1+CCX+dCC1);}
+    if(fabs(dCC2)<dCCX || fabs(X1-X2)<0.0001*X1) 
+      {*Xf=X2; MassCut=Mcdm*(2-log(Beps)/X2); return Yeq(Mcdm/X2)*sqrt(1+CCX+dCC2);}
+    X=0.5*(X1+X2); 
+    dCC=-CCX+dY23(polint1(Mcdm/X,Tdim,t_,s3_),Beps,Fast);
+    if(dCC>0) {dCC1=dCC;X1=X;}  else {dCC2=dCC;X2=X;} 
+  }
+}
+
 
 static double Beps_;
 int Fast_=1;
@@ -1378,24 +1857,41 @@ static void XderivLn(double s3, double *Y, double *dYdx)
   }
 }
 
-static void XderivLn32(double s3, double *Y, double *dYdx) // 32add
+static void XderivLn23(double s3, double *Y, double *dYdx) // 32add
 {
   double y=Y[0], X;
   double yeq, sqrt_gStar;
   double T,heff,geff;
+  int nxout=0,nsub23;
   T=polint1(s3,Tdim,s3_,t_);
   X=Mcdm/T;
   heff=hEff(T);
   geff=gEff(T);
   MassCut=2*Mcdm -T*log(Beps_); yeq=Yeq(T);
-  { double vSig32,vSig,alpha,epsY;
+  { double vSig23=0,vSig,alpha,epsY;
   
+		//printf("%f\t",Mcdm/T);
     if(deltaY) epsY=deltaY/y; else  epsY=0; 
     vSig=vSigmaI(T,Beps_,Fast_,&alpha);
-    double a=0.214,b=1.0968,CONST;
-    vSig32=0;//a*exp(-b*X);
+    double CONST;
+    for (int i=0;i<NC*NC ;i++)
+		{
+		if (code23_3[i]==NULL) continue;
+		for (int jj=0;jj<code23_3[i]->interface->nprc;jj++)
+			{
+		  nxout=0;
+			for (int k=2;k<5;k++)
+				{
+				if(strcmp(code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL),"~x")==0 || strcmp(code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL),"~X")==0) nxout++;
+				}
+			if (nxout==3){nsub23=1+jj;vSig23+=vSigmaCC23_sub(T, code23_3[i],nsub23,0);nsub23==1;break;}
+			}/*
+		for (int jj=0;jj<code23_3[i]->interface->nprc;jj++,printf("\n")) for (int k=0;k<5;k++) printf("%s", code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL));
+		printf("\n");*/
+		}
+		printf("%e\n",vSig23);
     CONST=MPlank*pow(2*M_PI*M_PI/45.*heff,0.666666666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff);
-    *dYdx=CONST*((vSig32*(y*y-y*y*y/yeq))+vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY));
+    *dYdx=CONST*((vSig23*(y*y-y*y*y/yeq))+vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY));
     //MPlank*pow(2*M_PI*M_PI/45.*heff,0.666666666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY);
   }
 }
@@ -1436,7 +1932,7 @@ static double *Ytab=NULL;
 double YF(double T){ return polint3(T,Ntab,Ttab, Ytab) ;}
 
 
-double darkOmega32(double * Xf, int Fast, double Beps) // 32add
+double darkOmega23(double * Xf, int Fast, double Beps) // 32add
 {
   double Yt,Yi,Xt=27;
   double Z1=1.1,Z2=10,Zf=2.5; 
@@ -1458,7 +1954,7 @@ double darkOmega32(double * Xf, int Fast, double Beps) // 32add
   
   if(Z1<=1) Z1=1.1;
   
-  Yt=  darkOmega1(&Xt, Z1, (Z1-1)/5,Fast, Beps);
+  Yt=  darkOmega1_23(&Xt, Z1, (Z1-1)/5,Fast, Beps);
 
   if(Yt<0||FError) { return -1;}
   
@@ -1493,7 +1989,7 @@ double darkOmega32(double * Xf, int Fast, double Beps) // 32add
     s3_t=polint1(Mcdm/Xt,Tdim,t_,s3_);
     s3_2=polint1(Mcdm/X2,Tdim,t_,s3_); 
  //   if(odeint(&Yt,1 ,Mcdm/Xt , Mcdm/X2 , 1.E-3, (Mcdm/Xt-Mcdm/X2 )/2, &XderivLn)){ printf("problem in solving diff.equation\n"); return -1;}   
-    if(odeint(&Yt,1 ,s3_t , s3_2 , 1.E-4, (s3_2-s3_t)/2, &XderivLn32)){ printf("problem in solving diff.equation\n"); return -1;}
+    if(odeint(&Yt,1 ,s3_t , s3_2 , 1.E-4, (s3_2-s3_t)/2, &XderivLn23)){ printf("problem in solving diff.equation\n"); return -1;}
     if(Ntab>=Nt)
     { Nt+=20;
       Ytab=realloc(Ytab,sizeof(double)*Nt);
