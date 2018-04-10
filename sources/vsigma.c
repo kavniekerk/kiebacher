@@ -281,11 +281,11 @@ double vSigmaCC23 (double T,numout* cc, int mode)//32add
   { 
      case 2:
        if(T==0) a=vcs22(cc,1,&err); else
-       {  double eps=1.E-14, umin=0.;
+       {  double eps=1.E-9, umin=0.;
           sqme22=CI->sqme;
           nsub22=1;
           if((M1+M2-(pmass[2]+pmass[3]))<0) umin=sqrt(1.-exp((M1+M2-(pmass[2]+pmass[3]))/(3.*T)));
-          a=simpson(u_integrand_thresallow,umin,1.,eps);// natural units
+          a=simpson(u_integrand_,umin,1.,eps);// natural units
        }   
        break;
      case 3:
@@ -569,11 +569,11 @@ double vSigmaCC(double T,numout* cc, int mode)
   { 
      case 2:
        if(T==0) a=vcs22(cc,1,&err); else
-       {  double eps=1.E-9,umin=0;
+       {  double eps=1.E-12,umin=0;
           sqme22=CI->sqme;
           nsub22=1;
           if((M1+M2-(pmass[2]+pmass[3]))<0) umin=sqrt(1.-exp((M1+M2-(pmass[2]+pmass[3]))/(3.*T)));//adjusting integration range
-          a=simpson(u_integrand_thresallow,umin,1.,eps)*3.8937966E8;
+          a=simpson(u_integrand_thresallow,umin,1.,eps);
        }   
        break;
      case 3:

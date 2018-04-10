@@ -27,25 +27,26 @@ static ModelPrtclsStr ModelPrtcls_[20]=
 , {"c","C", 4, "Mc","0",1,3,2}
 , {"b","B", 5, "Mb","0",1,3,-1}
 , {"t","T", 6, "Mt","wt",1,3,2}
-, {"~ZZ","~ZZ", 31, "MDZ","0",2,1,0}
-, {"~x","~X", 32, "Mcdm","0",0,1,0}
+, {"~x","~X", 31, "Mcdm","0",0,1,0}
+, {"~ZZ","~ZZ", 32, "MDZ","0",2,1,0}
 , {"~H","~H", 33, "MDH","wDH",0,1,0}
 };
 ModelPrtclsStr *ModelPrtcls=ModelPrtcls_; 
 int nModelVars=28;
-int nModelFunc=25;
-static char*varNames_[53]={
+int nModelFunc=37;
+static char*varNames_[65]={
  "EE","alfSMZ","Q","s12","s23","s13","Mm","Ml","McMc","MbMb"
 ,"Mtp","MZ","MW","Mh","EPS","MUH","MUP","Mcdm","lamPC","lamCH"
 ,"lamPH","lamchi","lamphi","lamH","KAP","RATIO","gXhat","qd","CW","SW"
 ,"GF","LamQCD","Mb","Mt","Mc","c12","c23","c13","Vud","Vus"
 ,"Vub","Vcd","Vcs","Vcb","Vtd","Vts","Vtb","VEW","VDH","dhi"
-,"MDH","MUC","MDZ"};
+,"MDH","MUC","dalhi","alhiggs","tanxi","cosDG","sinDG","cosDH","sinDH","hcc"
+,"Hcc","hhcc","HHcc","Hhcc","MDZ"};
 char**varNames=varNames_;
-static REAL varValues_[53]={
+static REAL varValues_[65]={
    3.134300E-01,  1.184000E-01,  1.000000E+02,  2.210000E-01,  4.100000E-02,  3.500000E-03,  1.057000E-01,  1.777000E+00,  1.200000E+00,  4.250000E+00
-,  1.730700E+02,  9.118900E+01,  8.038500E+01,  1.250000E+02,  1.000000E-07,  5.200000E+00,  7.300000E+00,  2.400000E+00,  1.000000E-01,  1.000000E-01
-,  1.000000E-01,  1.000000E-01,  1.000000E-01,  1.000000E-01,  1.100000E+00,  1.003000E+02,  6.300000E+00,  3.000000E+00};
+,  1.730700E+02,  9.118900E+01,  8.038500E+01,  1.250000E+02,  1.000000E-07,  6.200000E+00,  5.300000E+00,  2.400000E+00,  1.200000E-01,  1.300000E-01
+,  4.000000E-01,  1.500000E-01,  4.000000E-01,  5.000000E-01,  1.160000E+00,  6.030000E+01,  1.300000E+00,  3.000000E+00};
 REAL*varValues=varValues_;
 int calcMainFunc(void)
 {
@@ -108,10 +109,34 @@ int calcMainFunc(void)
    if(!isfinite(V[49]) || FError) return 49;
    V[50]=sqrt(pow(V[13],2)+2*sqrt(pow(V[49],2)+pow(V[20],2)*pow(V[47],2)*pow(V[48],2)));
    if(!isfinite(V[50]) || FError) return 50;
-   V[51]=I*sqrt(-(pow(V[17],2)-V[18]*pow(V[48],2)/(2)-V[19]*pow(V[47],2)/(2)));
+   V[51]=sqrt(-(pow(V[17],2)-V[18]*pow(V[48],2)/(2)-V[19]*pow(V[47],2)/(2)));
    if(!isfinite(V[51]) || FError) return 51;
-   V[52]=V[25]*V[17];
+   V[52]=V[23]*V[47]*V[47]-V[48]*V[48]*V[22];
    if(!isfinite(V[52]) || FError) return 52;
+   V[53]=asin(2*V[20]*V[47]*V[48]/(2*sqrt(pow(V[52],2)+pow(V[20]*V[47]*V[48],2))))/(2);
+   if(!isfinite(V[53]) || FError) return 53;
+   V[54]=(pow(V[26]*V[48]/(V[25]*V[17]*cos(V[14])),2)-1)/(V[29]*tan(V[14]));
+   if(!isfinite(V[54]) || FError) return 54;
+   V[55]=1/(sqrt(1+pow(V[54],2)));
+   if(!isfinite(V[55]) || FError) return 55;
+   V[56]=sqrt(1-pow(V[55],2));
+   if(!isfinite(V[56]) || FError) return 56;
+   V[57]=cos(V[53]);
+   if(!isfinite(V[57]) || FError) return 57;
+   V[58]=sqrt(1-pow(V[57],2));
+   if(!isfinite(V[58]) || FError) return 58;
+   V[59]=-(V[18]*V[48]*V[57]+V[19]*V[47]*V[58]);
+   if(!isfinite(V[59]) || FError) return 59;
+   V[60]=-(V[18]*V[48]*V[58]-V[19]*V[47]*V[57]);
+   if(!isfinite(V[60]) || FError) return 60;
+   V[61]=-(V[18]*pow(V[57],2)+V[19]*pow(V[58],2))/(2);
+   if(!isfinite(V[61]) || FError) return 61;
+   V[62]=-(V[18]*pow(V[58],2)+V[19]*pow(V[57],2))/(2);
+   if(!isfinite(V[62]) || FError) return 62;
+   V[63]=(V[19]-V[18])*V[58]*V[57];
+   if(!isfinite(V[63]) || FError) return 63;
+   V[64]=V[25]*V[17];
+   if(!isfinite(V[64]) || FError) return 64;
    if(VV==NULL) 
    {  VV=malloc(sizeof(REAL)*nModelVars);
       for(i=0;i<nModelVars;i++) if(strcmp(varNames[i],"Q")==0) iQ=i;

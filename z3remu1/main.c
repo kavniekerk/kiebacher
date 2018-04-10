@@ -21,6 +21,7 @@ int main(int argc,char** argv)
   if(err==-1)     {printf("Can not open the file\n"); exit(1);}
   else if(err>0)  { printf("Wrong file contents at line %d\n",err);exit(1);}
   err=sortOddParticles(cdmName);
+  printConstr(stdout);
   if(err) { printf("Can't calculate %s\n",cdmName); return 1;}
   if(CDM1) 
   { 
@@ -47,6 +48,7 @@ int main(int argc,char** argv)
 #ifdef CONSTRAINTS
 { double csLim;
   if(Zinvisible()) printf("Excluded by Z->invizible\n");
+  //if(Zprimelimits()) printf("Excluded by Z' limits\n");
   if(LspNlsp_LEP(&csLim)) printf("LEP excluded by e+,e- -> DM q q-\\bar  Cross Section= %.2E pb\n",csLim);
 }
 #endif
@@ -70,17 +72,21 @@ int main(int argc,char** argv)
      printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
      if(Omega>0)printChannels(Xf,cut,Beps,1,stdout);
   }
-	double x, dx=0.8,vs, val=0;
+	double x, dx=0.4,vs, val=0;
 	val=findValW("VEW");
 	printf("VEW\t=\t%f\n", val);
 	val=findValW("VDH");
 	printf("VDH\t=\t%f\n", val);
+	val=findValW("sinDG");
+	printf("sinDG\t=\t%f\n", val);
+	val=findValW("sinDH");
+	printf("sinDH\t=\t%f\n", val);
 	FILE * fp=fopen("data", "w+");
-	numout * cc=newProcess("~x,~x->~x,~X,~X"),*cc22=newProcess("~x,~X->d,D");//("~x1,~x1->~x1,~X1,~X1");//,~X1"~x1,~X1->W+,W-"
+	numout * cc=newProcess("~x,~x->~x,~X,~X"),*cc22=newProcess("~x,~X->c,C");//("~x1,~x1->~x1,~X1,~X1");//,~X1"~x1,~X1->W+,W-"
 	double hubb,Rin,Rout,Rin22,Rout22,s,d,d22,vs22,noint,neq,nF, M_Pl=1.22066e19;
 	int rep22=0,rep=0,count=20;
 	double xstart=Mcdm/Tstart,xend=Mcdm/Tend;
-	for (x =3 ; x< 50; x+=dx,count++)
+	for (x =3 ; x< 40; x+=dx,count++)
 		{
 		if (x>19 && x<30 && rep==0) x-=0.2*dx;
 		s=s_dens(Mcdm/x);
@@ -97,7 +103,7 @@ int main(int argc,char** argv)
 			count--;
 			continue;
 			}
-		if (vs22==0 && rep22<2)
+		if (vs22==0 && rep22<9)
 			{
 			vs22= vSigmaCC23(Mcdm/x,cc22,0);
 			//printf("repeating calculation\n\n");
@@ -110,9 +116,9 @@ int main(int argc,char** argv)
 		Rin=vs*(nF-nF*nF/neq);
 		Rin22=vs22*(nF-neq*neq/nF);
 		hubb=H_rate(Mcdm/x);		
-		if(count%20==0)fprintf(stdout,"%s\t%s\t\t%s\t\t%s\t\t%s\t\t%s\n", "x","YF(x)","Yeq(x)","R_32","R_22","vs32");
-		fprintf(fp,    "%f\t%e\t%e\t%e\t%e\t%e\n"            , x,YF(Mcdm/x), vs22, fabs(Rin),fabs(Rin22),vs);
-		fprintf(stdout,"%.2f\t%.2e\t%.2e\t%.2e\t%.2e\t%.2e\n", x,YF(Mcdm/x), vs22, fabs(Rin),fabs(Rin22),vs);
+		if(count%20==0)fprintf(stdout,"%s\t%s\t\t%s\t\t%s\t\t%s\t\t%s\t\t%s\n", "x","YF(x)","Yeq(x)","R_22","vs22","R_32","vs32");
+		fprintf(fp,    "%f\t%e\t%e\t%e\t%e\t%e\t%e\n"              , x,YF(Mcdm/x), Yeq(Mcdm/x), fabs(Rin22), vs22, fabs(Rin),vs);
+		fprintf(stdout,"%.2f\t%.2e\t%.2e\t%.2e\t%.2e\t%.2e\t%.2e\n", x,YF(Mcdm/x), Yeq(Mcdm/x), fabs(Rin22), vs22, fabs(Rin),vs);
 		//fprintf(stdout,"%f\t%e\t%e\n", x, dcs,chi2);
 		}
 		

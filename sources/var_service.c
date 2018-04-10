@@ -3,13 +3,19 @@
 #include "micromegas_f.h"
 
 
+
 void printVar(FILE *f)
 {
   int i;
   fprintf(f,"\n# Model parameters:\n");
   for(i=0;i<nModelVars;i++) fprintf(f,"%-6.6s   %f\n", varNames[i], varValues[i]);
 }
-
+void printConstr(FILE *f)
+{
+  int i;
+  fprintf(f,"\n# Model constraints:\n");
+  for(i=nModelVars+19;i<nModelVars+nModelFunc ;i++) fprintf(f,"%s   %f\n", varNames[i], varValues[i]);
+}
 
 int assignVal(const char * name, double val)
 {

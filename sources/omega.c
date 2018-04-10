@@ -1596,7 +1596,7 @@ static void checkSgridUpdate(void)
   }       
 }
 
-static double vSigmaI(double T, double Beps, int fast,double * alpha_)
+static double vSigmaI23(double T, double Beps, int fast,double * alpha_)
 { double XX,alpha;
   int i,n;
   double X=Mcdm/T;
@@ -1633,6 +1633,75 @@ static double vSigmaI(double T, double Beps, int fast,double * alpha_)
     checkSgridUpdate();
     MassCut=Mcdm*(2-log(Beps)/XX);
     vSigmaGrid.data[vSigmaGrid.pow]=aRate23(XX,0,fast,&alpha,NULL,NULL);
+    vSigmaGrid.alpha[vSigmaGrid.pow]=alpha;
+    vSigmaGrid.pow++;
+  }
+
+  { double X0,X1,X2,X3,sigmav0,sigmav1,sigmav2,sigmav3,alpha0,alpha1,alpha2,alpha3;
+    i=log(X/vSigmaGrid.xtop)/log(XSTEP);
+    if(i<0)i=0; 
+    if(i>vSigmaGrid.pow-2) i=vSigmaGrid.pow-2;
+    X0=vSigmaGrid.xtop*pow(XSTEP,n-1); X1=X0*XSTEP;  X2=X1*XSTEP; X3=X2*XSTEP; 
+
+    sigmav0=log(vSigmaGrid.data[n-1]); alpha0=vSigmaGrid.alpha[n-1]; 
+    sigmav1=log(vSigmaGrid.data[n]);   alpha1=vSigmaGrid.alpha[n];
+    sigmav2=log(vSigmaGrid.data[n+1]); alpha2=vSigmaGrid.alpha[n+1];
+    sigmav3=log(vSigmaGrid.data[n+2]); alpha3=vSigmaGrid.alpha[n+2];
+    X=log(X);X0=log(X0); X1=log(X1); X2=log(X2); X3=log(X3);
+    
+    
+    if(alpha_)
+    { if(alpha1==0) *alpha_=0; 
+      else   *alpha_=  alpha0*       (X-X1)*(X-X2)*(X-X3)/        (X0-X1)/(X0-X2)/(X0-X3)
+                       +alpha1*(X-X0)*       (X-X2)*(X-X3)/(X1-X0)/        (X1-X2)/(X1-X3)
+                       +alpha2*(X-X0)*(X-X1)*       (X-X3)/(X2-X0)/(X2-X1)/        (X2-X3)
+                       +alpha3*(X-X0)*(X-X1)*(X-X2)       /(X3-X0)/(X3-X1)/(X3-X2)        ;
+    }
+    return exp( 
+    sigmav0*       (X-X1)*(X-X2)*(X-X3)/        (X0-X1)/(X0-X2)/(X0-X3)
+   +sigmav1*(X-X0)*       (X-X2)*(X-X3)/(X1-X0)/        (X1-X2)/(X1-X3) 
+   +sigmav2*(X-X0)*(X-X1)*       (X-X3)/(X2-X0)/(X2-X1)/        (X2-X3) 
+   +sigmav3*(X-X0)*(X-X1)*(X-X2)       /(X3-X0)/(X3-X1)/(X3-X2)        );                        
+  }
+}
+
+static double vSigmaI(double T, double Beps, int fast,double * alpha_)
+{ double XX,alpha;
+  int i,n;
+  double X=Mcdm/T;
+  if(vSigmaGrid.pow==0)
+  { checkSgridUpdate();
+    vSigmaGrid.pow=1;
+    vSigmaGrid.xtop=X;
+    MassCut=Mcdm*(2-log(Beps)/X);
+    vSigmaGrid.data[0]= aRate(X,0,fast,&alpha,NULL,NULL);
+    vSigmaGrid.alpha[0]=alpha;
+    if(alpha_) *alpha_=alpha;     
+    return vSigmaGrid.data[0];
+  }
+  
+  while(X<vSigmaGrid.xtop*XSTEP)
+  { XX=vSigmaGrid.xtop/XSTEP;
+    checkSgridUpdate();
+    for(i=vSigmaGrid.pow;i;i--)
+    { vSigmaGrid.data[i]=vSigmaGrid.data[i-1];
+      vSigmaGrid.alpha[i]=vSigmaGrid.alpha[i-1];
+    }
+    vSigmaGrid.xtop=XX;
+    MassCut=Mcdm*(2-log(Beps)/XX);
+    vSigmaGrid.data[0]=aRate(XX,0,fast,&alpha,NULL,NULL);
+    vSigmaGrid.alpha[0]=alpha; 
+    vSigmaGrid.pow++;
+  }
+  
+  n=log(X/vSigmaGrid.xtop)/log(XSTEP); 
+
+  while(n+2>vSigmaGrid.pow-1)
+  { 
+    XX=vSigmaGrid.xtop* pow(XSTEP,vSigmaGrid.pow)  ;
+    checkSgridUpdate();
+    MassCut=Mcdm*(2-log(Beps)/XX);
+    vSigmaGrid.data[vSigmaGrid.pow]=aRate(XX,0,fast,&alpha,NULL,NULL);
     vSigmaGrid.alpha[vSigmaGrid.pow]=alpha;
     vSigmaGrid.pow++;
   }
@@ -1706,16 +1775,26 @@ static double dY23(double s3, double Beps,double fast)  //add 2->3 processes
 /*
 double a=235.,b=1.36;//fit of sigv^2
   vSig32=a*exp(-b*Mcdm/T);*/
-  vSig=vSigmaI(T,Beps, fast,&alpha);
-  for (int i=0;i<NC ;i++)
+  vSig=vSigmaI23(T,Beps, fast,&alpha);
+int nsub23=1,nx=0;
+	for (int i=0;i<NC*NC ;i++)
 		{
 		if (code23_3[i]==NULL) continue;
-		vSig23+=vSigmaCC23(T, code23_3[i],0);
-		printf("%i code\n",i);
+		for (int jj=0;jj<code23_3[i]->interface->nprc;jj++)
+			{
+		  nx=0;
+			for (int k=0;k<5;k++)
+				{
+				if(strcmp(code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL),"~x")==0 || strcmp(code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL),"~X")==0) nx++;
+				}
+			if (nx==5){nsub23=1+jj;vSig23+=vSigmaCC23_sub(T, code23_3[i],nsub23,0);nsub23==1;break;}
+			}
+			/*for (int jj=0;jj<code23_3[i]->interface->nprc;jj++,printf("\n")) for (int k=0;k<5;k++) printf("%s", code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL));
+		printf("\n");*/
 		}
   if(vSig <=0) return 10;
   if(vSig==0){ FError=1; return 0;}
-  res= dlnYds3/(pow(2*M_PI*M_PI/45.*heff,0.66666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*(vSig+vSig23)*MPlank
+  res= dlnYds3/(pow(2*M_PI*M_PI/45.*heff,0.66666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*(vSig)*MPlank
   *(1-alpha/2)*sqrt(1+epsY*epsY))/Yeq(T);
   res=fabs(res);
   if(res>10) return 10;
@@ -1872,7 +1951,7 @@ static void XderivLn23(double s3, double *Y, double *dYdx) // 32add
   
 		//printf("%f\t",Mcdm/T);
     if(deltaY) epsY=deltaY/y; else  epsY=0; 
-    vSig=vSigmaI(T,Beps_,Fast_,&alpha);
+    vSig=vSigmaI23(T,Beps_,Fast_,&alpha);
     double CONST;
     for (int i=0;i<NC*NC ;i++)
 		{
@@ -1880,16 +1959,16 @@ static void XderivLn23(double s3, double *Y, double *dYdx) // 32add
 		for (int jj=0;jj<code23_3[i]->interface->nprc;jj++)
 			{
 		  nxout=0;
-			for (int k=2;k<5;k++)
+			for (int k=0;k<5;k++)
 				{
 				if(strcmp(code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL),"~x")==0 || strcmp(code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL),"~X")==0) nxout++;
 				}
-			if (nxout==3){nsub23=1+jj;vSig23+=vSigmaCC23_sub(T, code23_3[i],nsub23,0);nsub23==1;break;}
+			if (nxout==5){nsub23=1+jj;vSig23+=vSigmaCC23_sub(T, code23_3[i],nsub23,0);nsub23==1;break;}
 			}/*
-		for (int jj=0;jj<code23_3[i]->interface->nprc;jj++,printf("\n")) for (int k=0;k<5;k++) printf("%s", code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL));
+			for (int jj=0;jj<code23_3[i]->interface->nprc;jj++,printf("\n")) for (int k=0;k<5;k++) printf("%s", code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL));
 		printf("\n");*/
 		}
-		printf("%e\n",vSig23);
+		//if (vSig23!=0) printf("%f\t%e\n",X,vSig23);
     CONST=MPlank*pow(2*M_PI*M_PI/45.*heff,0.666666666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff);
     *dYdx=CONST*((vSig23*(y*y-y*y*y/yeq))+vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY));
     //MPlank*pow(2*M_PI*M_PI/45.*heff,0.666666666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY);
@@ -1955,7 +2034,7 @@ double darkOmega23(double * Xf, int Fast, double Beps) // 32add
   if(Z1<=1) Z1=1.1;
   
   Yt=  darkOmega1_23(&Xt, Z1, (Z1-1)/5,Fast, Beps);
-
+printf("Xf=%f\n", Xt);
   if(Yt<0||FError) { return -1;}
   
   Tstart=Mcdm/Xt;

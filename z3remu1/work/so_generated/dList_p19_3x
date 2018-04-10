@@ -1,0 +1,15 @@
+~ZZ -> Z,~H,~H
+~ZZ -> ~x,~X,~H
+~ZZ -> ~X,~X,~X
+~ZZ -> h,~x,~X
+~ZZ -> Z,~x,~X
+~ZZ -> ~x,~x,~x
+~ZZ -> h,t,T
+~ZZ -> h,b,B
+~ZZ -> h,c,C
+~ZZ -> h,l,L
+~ZZ -> h,m,M
+~ZZ -> h,h,h
+~ZZ -> Z,h,h
+~ZZ -> W+,W-,h
+~ZZ -> Z,Z,h

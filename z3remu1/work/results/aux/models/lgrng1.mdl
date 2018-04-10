@@ -23,6 +23,15 @@ h    |h    |~ZZ  |     |-gXhat*qd*cosDG*sinDH*sinDH/2     |(p2-p1).m3
 h    |h    |Z    |     |-gXhat*qd*sinDG*sinDH*sinDH/2     |(p2-p1).m3
 ~H   |~H   |~ZZ  |     |-gXhat*qd*cosDG*cosDH*cosDH/2     |(p2-p1).m3
 ~H   |~H   |Z    |     |-gXhat*qd*sinDG*cosDH*cosDH/2     |(p2-p1).m3
+e    |E    |~ZZ  |     |-EE*EPS                           |G(m3)
+m    |M    |~ZZ  |     |-EE*EPS                           |G(m3)
+l    |L    |~ZZ  |     |-EE*EPS                           |G(m3)
+u    |U    |~ZZ  |     |-EE*EPS*2/3                       |G(m3)
+c    |C    |~ZZ  |     |-EE*EPS*2/3                       |G(m3)
+t    |T    |~ZZ  |     |-EE*EPS*2/3                       |G(m3)
+d    |D    |~ZZ  |     |-EE*EPS/3                         |G(m3)
+s    |S    |~ZZ  |     |-EE*EPS/3                         |G(m3)
+b    |B    |~ZZ  |     |-EE*EPS/3                         |G(m3)
 G    |G    |G.t  |     |GG/Sqrt2                          |m1.M3*m2.m3-m1.m3*m2.M3
 W+   |W-   |A    |     |-EE                               |m1.m2*(p1-p2).m3+m2.m3*(p2-p3).m1+m3.m1*(p3-p1).m2
 W+   |W-   |Z    |     |-EE*CW/SW                         |m1.m2*(p1-p2).m3+m2.m3*(p2-p3).m1+m3.m1*(p3-p1).m2

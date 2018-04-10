@@ -152,7 +152,7 @@ extern int    findVal(char * name,double * val);
 extern int    assignValW(const char * name, double val);
 extern double findValW(char * name);
 extern int    readVar(char *fname);
-  
+extern void printConstr(FILE *f);
 /*===========================================
    Checking of parameters 
   ===========================================*/ 

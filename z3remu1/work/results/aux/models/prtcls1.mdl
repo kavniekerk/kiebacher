@@ -18,7 +18,7 @@ s-quark      |s   |S   |3       |1     |0     |0     |3    |   |s         |\bar{
 c-quark      |c   |C   |4       |1     |Mc    |0     |3    |   |c         |\bar{c}
 b-quark      |b   |B   |5       |1     |Mb    |0     |3    |   |b         |\bar{b}
 t-quark      |t   |T   |6       |1     |Mt    |!wt   |3    |   |t         |\bar{t}
-Z'- boson    |~ZZ |~ZZ |31      |2     |MDZ   |0     |1    |0  |Z'        |Z'
-Dark matter  |~x  |~X  |32      |0     |Mcdm  |0     |1    |0  |\chi      |\bar{\chi}
-Dark Higgs   |~H  |~H  |33      |0     |MDH   |!wDH  |1    |0  |h_2       |h_2
+Z'- boson    |~ZZ |~ZZ |31      |2     |MDZ   |0     |1    |   |Z'        |Z'
+Dark matter  |~x  |~X  |32      |0     |Mcdm  |0     |1    |   |\chi      |\bar{\chi}
+Dark Higgs   |~H  |~H  |33      |0     |MDH   |!wDH  |1    |   |h_2       |h_2
 ==========================================================================================
