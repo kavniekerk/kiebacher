@@ -19,7 +19,7 @@ double INTER(double x) { return polint3(x,NT,XX,YY);}
 */
 
 extern double cs23(numout*cc, int nsub, double Pcm, int ii3);
-
+static int calc23=1; // 1 = calculate 2->3 processes 0 = ignore 2->3 processes
 
 typedef  struct{ int virt,i3;double br,w[2];numout*cc23; int nTab; double *pcmTab; double *csTab;} processAuxRec;
 
@@ -83,6 +83,13 @@ static int Z4ch( char *name)
    return 2;
 }
 
+double coreandcusp(double P) //returns sigma_self/M in cm^2/g
+{
+int er=0;
+numout *cc1=newProcess("~x,~X->~x,~X"),*cc2=newProcess("~x,~x->~x,~x");
+double cs_self=cs22(cc1,1,P,-1,1,&er)+2.*cs22(cc2,1,P,-1,1,&er);
+return cs_self*1.e-36/(Mcdm*1.8e-24);	
+}
 int loadvs23(char*fname, int nsub32) //tabulating 3->2 processes
 {  double *tabs[2];
    int nRec,nCol,i;
@@ -1752,8 +1759,7 @@ static double dY(double s3, double Beps,double fast)
   vSig=vSigmaI(T,Beps, fast,&alpha);
   if(vSig <=0) return 10;
   if(vSig==0){ FError=1; return 0;}
-  res= dlnYds3/(pow(2*M_PI*M_PI/45.*heff,0.66666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*vSig*MPlank
-  *(1-alpha/2)*sqrt(1+epsY*epsY))/Yeq(T);
+  res= dlnYds3/(pow(2*M_PI*M_PI/45.*heff,0.66666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*vSig*MPlank*(1-alpha/2)*sqrt(1+epsY*epsY))/Yeq(T);
   res=fabs(res);
   if(res>10) return 10;
   return res;
@@ -1780,7 +1786,7 @@ int nsub23=1,nx=0;
 	for (int i=0;i<NC*NC ;i++)
 		{
 		if (code23_3[i]==NULL) continue;
-		for (int jj=0;jj<code23_3[i]->interface->nprc;jj++)
+		for (int jj=0;jj<code23_3[i]->interface->nprc && calc23;jj++)
 			{
 		  nx=0;
 			for (int k=0;k<5;k++)
@@ -1794,10 +1800,11 @@ int nsub23=1,nx=0;
 		}
   if(vSig <=0) return 10;
   if(vSig==0){ FError=1; return 0;}
-  res= dlnYds3/(pow(2*M_PI*M_PI/45.*heff,0.66666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*(vSig)*MPlank
-  *(1-alpha/2)*sqrt(1+epsY*epsY))/Yeq(T);
+  if ((vSig/vSig23)>100 && vSig23>0 && calc23) { calc23=0; printf("2->3 processes are insignificant O(%f) and are ignored\n\n",(vSig/vSig23));}
+  res= dlnYds3/(pow(2*M_PI*M_PI/45.*heff,0.66666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*(vSig+vSig23)*MPlank*((1-alpha/2)*sqrt(1+epsY*epsY)))/Yeq(T);
   res=fabs(res);
   if(res>10) return 10;
+  printf("X = %.2f\tdY = %.3e\n",Mcdm/T,res);
   return res;
 } 
 
@@ -1947,7 +1954,7 @@ static void XderivLn23(double s3, double *Y, double *dYdx) // 32add
   heff=hEff(T);
   geff=gEff(T);
   MassCut=2*Mcdm -T*log(Beps_); yeq=Yeq(T);
-  { double vSig23=0,vSig,alpha,epsY;
+  { double vSig23=0,vSig,alpha,epsY,result;
   
 		//printf("%f\t",Mcdm/T);
     if(deltaY) epsY=deltaY/y; else  epsY=0; 
@@ -1956,7 +1963,7 @@ static void XderivLn23(double s3, double *Y, double *dYdx) // 32add
     for (int i=0;i<NC*NC ;i++)
 		{
 		if (code23_3[i]==NULL) continue;
-		for (int jj=0;jj<code23_3[i]->interface->nprc;jj++)
+		for (int jj=0;jj<code23_3[i]->interface->nprc && calc23 ;jj++)
 			{
 		  nxout=0;
 			for (int k=0;k<5;k++)
@@ -1968,10 +1975,12 @@ static void XderivLn23(double s3, double *Y, double *dYdx) // 32add
 			for (int jj=0;jj<code23_3[i]->interface->nprc;jj++,printf("\n")) for (int k=0;k<5;k++) printf("%s", code23_3[i]->interface->pinf(jj+1,k+1,NULL,NULL));
 		printf("\n");*/
 		}
-		//if (vSig23!=0) printf("%f\t%e\n",X,vSig23);
+    if ((vSig/vSig23)>100 && vSig23>0 && calc23) { calc23=0; printf("2->3 processes are insignificant O(%f) and are ignored\n\n",(vSig/vSig23));}
     CONST=MPlank*pow(2*M_PI*M_PI/45.*heff,0.666666666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff);
-    *dYdx=CONST*((vSig23*(y*y-y*y*y/yeq))+vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY));
+    result=CONST*((vSig23*(y*y-y*y*y/yeq))+vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY));
+    *dYdx=result;
     //MPlank*pow(2*M_PI*M_PI/45.*heff,0.666666666666)/sqrt(8*M_PI/3.*M_PI*M_PI/30.*geff)*vSig*(y*y-(1-alpha)*yeq*yeq-alpha*y*yeq)*sqrt(1+epsY*epsY);
+  printf("X = %f\tdY/dx = %.5e\n",X,result);
   }
 }
 
@@ -2068,7 +2077,7 @@ printf("Xf=%f\n", Xt);
     s3_t=polint1(Mcdm/Xt,Tdim,t_,s3_);
     s3_2=polint1(Mcdm/X2,Tdim,t_,s3_); 
  //   if(odeint(&Yt,1 ,Mcdm/Xt , Mcdm/X2 , 1.E-3, (Mcdm/Xt-Mcdm/X2 )/2, &XderivLn)){ printf("problem in solving diff.equation\n"); return -1;}   
-    if(odeint(&Yt,1 ,s3_t , s3_2 , 1.E-4, (s3_2-s3_t)/2, &XderivLn23)){ printf("problem in solving diff.equation\n"); return -1;}
+    if(odeint(&Yt,1 ,s3_t , s3_2 , 1.E-3, (s3_2-s3_t)/2, &XderivLn23)){ printf("problem in solving diff.equation\n"); return -1;}
     if(Ntab>=Nt)
     { Nt+=20;
       Ytab=realloc(Ytab,sizeof(double)*Nt);

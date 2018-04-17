@@ -5,7 +5,7 @@ N_PLOT=$2
 
 make
 
-./main $PAR
+time ./main $PAR
 
 plo="gnu.g"	
 touch ./$plo

@@ -1,0 +1,14 @@
+l -> nl,b,T
+l -> nl,s,T
+l -> nl,d,T
+l -> nl,C,b
+l -> nl,U,b
+l -> nl,s,C
+l -> nl,d,C
+l -> nl,U,s
+l -> nl,d,U
+l -> m,Nm,nl
+l -> e,Ne,nl
+l -> W-,h,nl
+l -> Z,W-,nl
+l -> A,W-,nl

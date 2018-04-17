@@ -128,6 +128,7 @@ extern double cs22(numout * cc, int nsub,double P,  double cos1, double cos2 , i
 extern int  procInfo1(numout*cc, int *nsub, int * nin, int *nout);
 extern int procInfo2(numout*cc,int nsub,char**name,REAL*mass);
 extern REAL Helicity[2];
+extern double coreandcusp(double P);
 
 extern void PDTList(void);
 extern int  setPDT(char*name);

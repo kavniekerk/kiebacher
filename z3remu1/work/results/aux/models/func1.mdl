@@ -20,15 +20,17 @@ brokenU(1)
  Vtd                   |s12*s23-c12*c23*s13           % C-K-M matrix element
  Vts                   |-c12*s23-s12*c23*s13          % C-K-M matrix element
  Vtb                   |c23*c13                       % C-K-M matrix element
-VEW                    |sqrt((4*lamphi*MUH^2-2*lamPH*MUP^2)/(4*lamH*lamphi-lamPH^2))   % VE
-VDH                    |sqrt((4*lamH*MUP^2-2*lamPH*MUH^2)/(4*lamH*lamphi-lamPH^2))       %
+MUP                    |sqrt(lamphi*VDH*VDH+lamPH*VEW*VEW/2) % \mu_\phi
+MUH                    |sqrt(lamH*VEW*VEW+lamPH*VDH*VDH/2)   % \mu_H
 dhi                    |(lamH*VEW^2-VDH^2*lamphi) % delta
 MDH                    |sqrt(Mh^2+2*sqrt(dhi^2+lamPH^2*VEW^2*VDH^2)) % Mass of dark higgs
 MUC                    |sqrt(-(Mcdm^2-lamPC*VDH^2/2-lamCH*VEW^2/2))   % Mass of DM
  dalhi                 |(lamH*VEW*VEW-VDH*VDH*lamphi)  %delta
  alhiggs               |asin(2*lamPH*VEW*VDH/(2*sqrt(dalhi^2+(lamPH*VEW*VDH)^2)))/2 % mi
- tanxi                 |((gXhat*VDH/((RATIO*Mcdm)*cos(EPS)))^2-1)/(SW*tan(EPS)) % mixing ange
- cosDG                 |1/sqrt(1+tanxi^2)          % cos(dark Gauge bosons mixing angel=xi)
+ denxi                 |(gXhat*VDH)^2-MZ*((cos(EPS))^2-(sin(EPS))^2*SW^2) %denominator
+ xi                    |atan(-(MZ^2*SW*sin(2*EPS))/denxi)/2
+ MZeff                 |MZ*sqrt(1+SW*tan(xi)*tan(EPS)) % corrected mass of Z boson
+ cosDG                 |1/sqrt(1+tan(xi)^2)          % cos(dark Gauge bosons mixing angel=xi)
  sinDG                 |sqrt(1-cosDG^2)  % sin(xi)
  cosDH                 |cos(alhiggs)     % cos(dark higgs mixing angel=alhiggs)
  sinDH                 |sqrt(1-cosDH^2)  % sin(alhiggs)
@@ -37,5 +39,5 @@ MUC                    |sqrt(-(Mcdm^2-lamPC*VDH^2/2-lamCH*VEW^2/2))   % Mass of 
  hhcc                  |-(lamPC*cosDH^2+lamCH*sinDH^2)/2  % h h ~x ~X vertex factor
  HHcc                  |-(lamPC*sinDH^2+lamCH*cosDH^2)/2  % ~H ~H ~x ~X vertex factor|
  Hhcc                  |(lamCH-lamPC)*sinDH*cosDH     % ~H h ~x ~X vertex factor|
- MDZ                   |RATIO*Mcdm 
+ MDZ                   |RATIO*Mcdm
 ============================================================================================

@@ -56,10 +56,10 @@ int main(int argc,char** argv)
 #ifdef OMEGA
 { int fast=0;
   double Beps=1.E-7, cut=1.e-160;
-  double Omega;  
+  double Omega, P=1e-3;  
   int i,err; 
+  printf("sigma_self/Mcdm(P=%f) = %e cm^2/g",P,coreandcusp(P));
   printf("\n==== Calculation of relic density =====\n");   
-
   if(CDM1 && CDM2) 
   {
   
@@ -72,17 +72,9 @@ int main(int argc,char** argv)
      printf("Xf=%.2e Omega=%.2e\n",Xf,Omega);
      if(Omega>0)printChannels(Xf,cut,Beps,1,stdout);
   }
-	double x, dx=0.4,vs, val=0;
-	val=findValW("VEW");
-	printf("VEW\t=\t%f\n", val);
-	val=findValW("VDH");
-	printf("VDH\t=\t%f\n", val);
-	val=findValW("sinDG");
-	printf("sinDG\t=\t%f\n", val);
-	val=findValW("sinDH");
-	printf("sinDH\t=\t%f\n", val);
+	double x, dx=1,vs;
 	FILE * fp=fopen("data", "w+");
-	numout * cc=newProcess("~x,~x->~x,~X,~X"),*cc22=newProcess("~x,~X->c,C");//("~x1,~x1->~x1,~X1,~X1");//,~X1"~x1,~X1->W+,W-"
+	numout * cc=newProcess("~x,~x->~x,~X,~X"),*cc22=newProcess("~x,~X->u,U");//("~x1,~x1->~x1,~X1,~X1");//,~X1"~x1,~X1->W+,W-"
 	double hubb,Rin,Rout,Rin22,Rout22,s,d,d22,vs22,noint,neq,nF, M_Pl=1.22066e19;
 	int rep22=0,rep=0,count=20;
 	double xstart=Mcdm/Tstart,xend=Mcdm/Tend;
@@ -92,11 +84,11 @@ int main(int argc,char** argv)
 		s=s_dens(Mcdm/x);
 		neq=s*Yeq(Mcdm/x);
 		nF=s*YF(Mcdm/x);
-		vs22=vSigmaCC23(Mcdm/x,cc22,0);
+		vs22=vSigmaCC23(Mcdm/x,cc22,1);
 		vs=vSigmaCC23(Mcdm/x,cc,0);
 		if (vs==0 && rep<20) 
 			{
-			//vs= vSigmaCC23(Mcdm/x,cc,0);
+			vs= vSigmaCC23(Mcdm/x,cc,0);
 			rep++;
 			//printf("repeating calculation\n\n");
 			x-=dx;
@@ -105,7 +97,7 @@ int main(int argc,char** argv)
 			}
 		if (vs22==0 && rep22<9)
 			{
-			vs22= vSigmaCC23(Mcdm/x,cc22,0);
+			vs22= vSigmaCC23(Mcdm/x,cc22,1);
 			//printf("repeating calculation\n\n");
 			rep22++;
 			x-=dx;

@@ -8,7 +8,7 @@ cd ./z3remu1
 make
 mkdir lastdata
 
-./main $PAR
+time ./main $PAR
 cp -u data ./lastdata/data
 plo="lastdata/gnu.g"	
 touch ./$plo

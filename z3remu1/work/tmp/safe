@@ -1,13 +1,18 @@
 #Model 1
 #ForceUG 0
-#nIn 0
-#nOut 0
-#Process e,E -> m,M
-#nTot 0
+#nIn 2
+#nOut 3
+#Process ~x,~x->~x,~X,~X
+#nTot 5
+*~x=~x
+*~x=~x
+*~x=~x
+*~X=~X
+*~X=~X
 #Remove_Virtual 
 #Remove_X 
-#nSubproc(ampl) 0
-#nSubproc(squared) 0
+#nSubproc(ampl) 1
+#nSubproc(squared) 1
 #Nc==inf  0
 #NcCC==inf  0
 #NoColorChains 0
@@ -16,4 +21,4 @@
 #VVdecays    1
 #NewCodes  0
 #nPROCSS 4
-#ExitCode 2
+#ExitCode 5

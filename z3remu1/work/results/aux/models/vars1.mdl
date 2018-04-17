@@ -15,18 +15,18 @@ brokenU(1)
  MZ            |91.189       |Z-boson mass
  MW            |80.385       |W-boson mass
  Mh            |125.0        |higgs mass
-EPS            |0.000001    |coupling to visible sector
-MUH            |5.2          |\mu_H
-MUP            |7.3         |\mu_\phi
-Mcdm           |2.4          |\m_\chi
-lamPC          |0.1         |lambda_phi chi
-lamCH          |0.1         |lambda_chi H
-lamPH          |0.1         |lambda_phi H
-lamchi         |0.1         |lambda_chi
-lamphi         |0.1         |lambda_phi
-lamH           |0.1         |lambda_H
-KAP            |1.1          |kappa for x^3phi^dag
-RATIO          |1.3          |Dark gauge boson Z' mass
-gXhat          |6.3          |\hat{g}_X Dark coupling constant
+EPS            |0.00001     |coupling to visible sector
+VEW            |263.2        |Vev of the SM higgs field
+VDH            |1.0          |Vev of the SM higgs field
+Mcdm           |0.3          |\m_\chi
+lamPC          |0.12         |lambda_phi chi
+lamCH          |0.13         |lambda_chi H
+lamPH          |0.4          |lambda_phi H
+lamchi         |0.15         |lambda_chi
+lamphi         |0.4          |lambda_phi
+lamH           |0.5          |lambda_H
+KAP            |1.16         |kappa for x^3phi^dag
+RATIO          |3.333        |Dark gauge boson Z' mass
+gXhat          |5.0          |\hat{g}_X Dark coupling constant
 qd             |3.0          |dark higgs charge
 ==========================================================================================

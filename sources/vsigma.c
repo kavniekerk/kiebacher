@@ -222,145 +222,7 @@ static double vsigma24integrand0(double *x, double w)
 
 double vSigmaCC23 (double T,numout* cc, int mode)//32add
 {
-  int i,err,n,n0,m,w;
-  char*s, *pname[6];
-  int pdg[6];
-  double msum;
-  double a=0,factor,dMax=0;
-  int spin2,cdim,neutral1,neutral2;
-  double oldQ;
-  
-  double bEps=1.E-14;
-  double dI;
-  int dmOut;
-      
-  CI=cc->interface; 
-  T_=T;
-  if(passParameters(cc)) return -1;
-  if(Qaddress && CI->nout==2) 
-  {  oldQ=*Qaddress;
-     for(i=0;i<2;i++) pname[i]=CI->pinf(1,i+1,pmass+i,pdg+i);
-     *Qaddress=pmass[0]+pmass[1];
-     calcMainFunc();
-     if(passParameters(cc)) return -1;
-  }
-  
-  for(i=0;i<2+CI->nout;i++) pname[i]=CI->pinf(1,i+1,pmass+i,pdg+i);  
-
-  M1=pmass[0];
-  M2=pmass[1];
-  
-
-  if(mode) 
-  { if(pname[0][0]!='~' || pname[1][0]!='~') return 0;
-    if(T==0 && (M1< Mcdm || M2<Mcdm)) return 0;
-    dmOut=0; 
-    for(i=2;i<2+CI->nout;i++) if(pname[i][0]=='~') dmOut++;
-    if(dmOut==2) return 0; 
-  }    
- 
-  for(i=2,msum=0;i<(CI->nout+2);i++) msum+=pmass[i];
-  
-  sqrtSmin=M1+M2;
-  
-  if(msum > sqrtSmin)
-  { 
-		if(T==0) return 0; 
-		else sqrtSmin=msum; 
-  }//enabling 3->2 processes
-  sqrtSmax=sqrtSmin+T*100;
-
-  n0=0; 
-  if(CI->nout>2) for(n=1;(s=CI->den_info(1,n,&m,&w));n++)
-  { double d=sing2(s,CI->nout,CI->va[m],CI->va[w]); 
-    if(!isfinite(d)) { printf("non-integrable pole\n"); return 0;}
-    if(d>dMax){ dMax=d; n0=n;} 
-  }
-
-  switch(CI->nout)
-  { 
-     case 2:
-       if(T==0) a=vcs22(cc,1,&err); else
-       {  double eps=1.E-9, umin=0.;
-          sqme22=CI->sqme;
-          nsub22=1;
-          if((M1+M2-(pmass[2]+pmass[3]))<0) umin=sqrt(1.-exp((M1+M2-(pmass[2]+pmass[3]))/(3.*T)));
-          a=simpson(u_integrand_,umin,1.,eps);// natural units
-       }   
-       break;
-     case 3:
-     {  
-        if(n0)
-        {  s=CI->den_info(1,n0,&m,&w);
-           for(i3=2;i3<5;i3++) if(i3!=s[0]-1 && i3!=s[1]-1) break;
-           for(i4=2;i4<4;i4++) if(i4!=i3) break;   
-           for(i5=i4+1;i5<=4;i5++) if(i5!=i3) break;    
-        } else {i3=2;i4=3;i5=4;}
-        //test for 3->2 processes
-         sqrtSmax=sqrtSmin-T*log(bEps); 
-        if(T==0) a=vegas_chain(3, vsigma23integrand0 ,2000,1., 0.03,&dI,NULL);
-        else     
-            {
-            a=vegas_chain(10, vsigma32integrandT ,5000,1., 0.001,&dI,NULL);
-            int jj;
-            for (jj=1;jj<=14 && a==0;jj++)
-               {
-               a=vegas_chain(5, vsigma32integrandT ,2000*jj,1., 0.03125*pow(2,-jj),&dI,NULL);
-               //printf("vegas integration failed %d. attempt with aumented precision\n",jj+1);
-               if (a!=0) {/*printf("value=%e\t%e\terror=%f\n", a, dI, 100.*dI/a);break;*/}
-               }
-            //if (jj==15) printf("vegas integration failed %d times and is aborted\n",jj);
-            }
-        break;
-     }
-     case 4:
-         if(n0) 
-         {  s=CI->den_info(1,n0,&m,&w);
-            i3=s[0]-1;
-            i4=s[1]-1;
-            for(i5=2;i5<5;i5++)  if(i5!=i3 && i5!=i4) break;
-            for(i6=i5+1;i6<=5;i6++) if(i6!=i3 && i6!=i4) break;
-         }else { i3=2;i4=3;i5=4;i6=5;} 
-//         printf("i3,i4,i5,i6= %d %d %d %d\n", i3,i4,i5,i6); 
-         if(T==0) a=vegas_chain(6, vsigma24integrand0 ,4000,1., 0.03,&dI,NULL);
-         else     a=vegas_chain(8, vsigma24integrandT ,5000,1., 0.03,&dI,NULL);
-                                
-     break;
-     default:
-        printf("Too many outgoing particles\n");
-        a=0;  
-   }  
-
-//   WIDTH_FOR_OMEGA=0;
-  
-   if(mode)
-   {  a*= 1-0.5*dmOut;// potential diracfactor?
-      char *p0=pname[0],*p1=pname[1],*c0=NULL,*c1=NULL;
-      double s=0,k=M1*M1*M2*M2/sqrt(M1*M2)*K2pol(T/M1)*K2pol(T/M2);            
-      for(i=0;i<nModelParticles;i++) if(ModelPrtcls[i].name[0]=='~')
-      {  double m=pMass(ModelPrtcls[i].name);
-         int dim=ModelPrtcls[i].cdim*(ModelPrtcls[i].spin2+1);
-         
-              if(strcmp(p0,ModelPrtcls[i].name) ==0){ c0=ModelPrtcls[i].aname;k*=dim;} 
-         else if(strcmp(p0,ModelPrtcls[i].aname)==0){ c0=ModelPrtcls[i].name; k*=dim;}
-              if(strcmp(p1,ModelPrtcls[i].name) ==0){ c1=ModelPrtcls[i].aname;k*=dim;} 
-         else if(strcmp(p1,ModelPrtcls[i].aname)==0){ c1=ModelPrtcls[i].name; k*=dim;}
-         if(strcmp(ModelPrtcls[i].name,ModelPrtcls[i].aname)!=0) dim*=2;
-         if(0.5*(M1+M2)-m >30*T){ k=0;s=1;break;}
-         s+=dim*m*m/sqrt(m)*K2pol(T/m)*exp(-(m-0.5*(M1+M2))/T); 
-      }
-      if(k)      
-      {  if(strcmp(p0,p1)) k*=2;
-         if(! (  (strcmp(p0,c0)==0 && strcmp(p1,c1)==0)
-               ||(strcmp(p0,c1)==0 && strcmp(p1,c0)==0)
-              ) ) k*=2;   
-      } 
-      a*=k/s/s;
-   }  
-
-   if(Qaddress && CI->nout==2) { *Qaddress=oldQ; calcMainFunc();}
-   
-   return a;
+return vSigmaCC23_sub (T,cc,1, mode);
 }
 
 double vSigmaCC23_sub (double T,numout* cc,int nsub, int mode)//32add
@@ -441,15 +303,15 @@ double vSigmaCC23_sub (double T,numout* cc,int nsub, int mode)//32add
         } else {i3=2;i4=3;i5=4;}
         //test for 3->2 processes
          sqrtSmax=sqrtSmin-T*log(bEps); 
-        if(T==0) a=vegas_chain(3, vsigma23integrand0 ,2000,1., 0.03,&dI,NULL);
+        if(T==0) a=vegas_chain(5, vsigma23integrand0 ,2000,1., 0.03,&dI,NULL);
         else     
             {
             nsub23=nsub;
-            a=vegas_chain(10, vsigma32integrandT ,5000,1., 0.001,&dI,NULL);
+            a=vegas_chain(5, vsigma32integrandT ,10000,1., 0.001,&dI,NULL);
             int jj;
-            for (jj=1;jj<=14 && a==0;jj++)
+            for (jj=1;jj<=14 && (a==0 || (dI/a)>1.);jj++)
                {
-               a=vegas_chain(5, vsigma32integrandT ,2000*jj,1., 0.03125*pow(2,-jj),&dI,NULL);
+               a=vegas_chain(5, vsigma32integrandT ,10000*jj,1., 0.03125*pow(2,-jj),&dI,NULL);
                //printf("vegas integration failed %d. attempt with aumented precision\n",jj+1);
                if (a!=0) {/*printf("value=%e\t%e\terror=%f\n", a, dI, 100.*dI/a);break;*/}
                }
@@ -518,7 +380,7 @@ double vSigmaCC(double T,numout* cc, int mode)
   int spin2,cdim,neutral1,neutral2;
   double oldQ;
   
-  double bEps=1.E-4;
+  double bEps=1.E-8;
   double dI;
   int dmOut;
       
@@ -569,10 +431,10 @@ double vSigmaCC(double T,numout* cc, int mode)
   { 
      case 2:
        if(T==0) a=vcs22(cc,1,&err); else
-       {  double eps=1.E-12,umin=0;
+       {  double eps=1.E-8,umin=0;
           sqme22=CI->sqme;
           nsub22=1;
-          if((M1+M2-(pmass[2]+pmass[3]))<0) umin=sqrt(1.-exp((M1+M2-(pmass[2]+pmass[3]))/(3.*T)));//adjusting integration range
+          //if((M1+M2-(pmass[2]+pmass[3]))<0) umin=sqrt(1.-exp((M1+M2-(pmass[2]+pmass[3]))/(3.*T)));//adjusting integration range
           a=simpson(u_integrand_thresallow,umin,1.,eps);
        }   
        break;
